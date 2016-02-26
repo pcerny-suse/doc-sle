@@ -38,8 +38,8 @@
       <varlistentry>
         <term>Online</term>
         <listitem>
-          <para>Connected through &scc;, &smtool; (&smt;), or
-            &susemgr;</para>
+          <para>Registered and connected through &scc;, &smtool;
+            (&smt;), or &susemgr;</para>
         </listitem>
       </varlistentry>
       <varlistentry>
