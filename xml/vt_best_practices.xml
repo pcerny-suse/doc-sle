@@ -10,14 +10,17 @@
 <article xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xlink="http://www.w3.org/1999/xlink" version="5.0" xml:id="article.vt.best.practices" xml:lang="en">
 <?suse-quickstart color="suse"?>
  <title>Virtualization Best Practices</title>
+ <subtitle>&productname; &productnumber;</subtitle>
  <info>
-  <productnumber>&productnumber;</productnumber><productname>&sle; &productname;</productname>
   <dm:docmanager xmlns:dm="urn:x-suse:ns:docmanager">
-   <dm:bugtracker></dm:bugtracker>
+   <dm:bugtracker>
+   </dm:bugtracker>
   </dm:docmanager>
+  <productname>&productname;</productname>
+  <productnumber>&productnumber;</productnumber>
  </info>
-<!--
-     we can write it based on on scenario?
+ <!--
+     we can write it based on scenario?
      Virtualization Capabilities:
      Consolidation (hardware1+hardware2 -> hardware)
      Isolation
@@ -29,31 +32,29 @@
   <title>Virtualization Scenarios</title>
 
   <para>
-   Virtualization offers your environment a lot of capabilities. It can be
-   used in multiple scenarios. To get more details about
-   <link xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/sec_virtualization_introduction_capabilities.html">Virtualization
-   Capabilities</link> and
-   <link xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/sec_virtualization_introduction_benefits.html">Virtualization
-   Benefits</link> refer to the
-   <link xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/book_virt.html">Virtualization
+   Virtualization offers a lot of capabilities to your environment. It can be
+   used in multiple scenarios. To get more details about <link
+   xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/sec_virtualization_introduction_capabilities.html">Virtualization
+   Capabilities</link> and <link
+   xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/sec_virtualization_introduction_benefits.html">Virtualization
+   Benefits</link> please refer to the <link
+   xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/book_virt.html">Virtualization
    Guide</link>.
   </para>
 
   <para>
-   This best practice will provide advice to help you make the best choices
-   for your environment; it will recommend or discourage options based on
-   your virtualization use case. Optimal configuration adjustments and
-   performance tuning can increase &vmguest; performance close to bare
-   metal.
+   This best practice guide will provide advice for making the right choice in
+   your environment. It will recommend or discourage the usage of options
+   depending on your workload. Fixing configuration issue and performing tuning
+   tasks will increase the performance of &vmguest;'s near to bare metal.
   </para>
 
   <remark>
-   Bruce 20150806: There is no mention of caching considerations, of migration inhibitors, or
-   basic strategies for how to do your storage or networking infrastructure,
-   and only a little bit about how to map your virtualization requirements to
-   host capabilities.
-   I see that the doc doesn't address the issue of when to use &xen; PV vs &xen; FV
-   vs KVM at all.
+   Bruce 20150806: There is no mention of caching considerations, of migration
+   inhibitors, or basic strategies for how to do your storage or networking
+   infrastructure, and only a little bit about how to map your virtualization
+   requirements to host capabilities.  I see that the doc doesn't address the
+   issue of when to use Xen PV vs Xen FV vs KVM at all.
   </remark>
 
 <!-- Todo
@@ -126,31 +127,25 @@
   -->
  </sect1>
  <sect1 xml:id="vt.best.intro">
-  <title>Before Any Modification</title>
+  <title>Before You Apply Modifications</title>
 
   <sect2 xml:id="vt.best.intro.backup">
    <title>Back Up First</title>
    <para>
-    Adjusting &vmguest; and VM Host configuration can lead to data loss or
-    an unstable state. It is very important to create backup configuration
-    files, data, images, etc. before making any changes. Backups ensure the
-    original configuration can be restored if data loss or a
-    miss-configuration.
-   </para>
-   <warning>
-    <para>
-     Backup is mandatory before doing any tests, ensuring the ability to
-     roll back to a usable/stable system or configuration. Do not perform
-     tests or experiments on online, production systems.
+    Changing the configuration of the &vmguest; or the &vmhost; can lead to
+    data loss or an unstable state. It is really important that you do backups
+    of files, data, images etc. before making any changes. Without backups you
+    will not be able to easily restore the original state after a data loss or
+    a mis-configuration. Do not perform tests or experiments on production
+    systems.
     </para>
-   </warning>
   </sect2>
 
   <sect2 xml:id="vt.best.intro.testing">
-   <title>Test Your Configurations</title>
+   <title>Test Your Workloads</title>
    <para>
     The efficiency of a virtualization environment depends on many factors.
-    This guide is provided as a reference to help make good choices when
+    This guide provides a reference for helping to make good choices when
     configuring virtualization in a production environment. Nothing is
     <emphasis>carved in stone</emphasis>. Hardware, workloads, resource
     capacity, etc. should all be considered when planning, testing, and
@@ -160,66 +155,59 @@
   </sect2>
  </sect1>
  <sect1 xml:id="vt.best.reco">
-  <title>Recommended Usage</title>
-
+  <title>Recommendations</title>
   <sect2 xml:id="vt.best.intro.libvirt">
-   <title>Prefer &libvirt; Framework</title>
+   <title>Prefer the &libvirt; Framework</title>
+   <remark>add some explanation about how to enable/disable kvm with
+   qemu-system-arch</remark>
    <para>
-    In SUSE Linux Enterprise it is recommended to use the &libvirt;
-    framework to use management operations on hosts, containers and
-    &vmguest;. Using management tools out-of-band prevents libvirt from
-    recognizing the changes. For example, creating a system image manually
-    with <command>qemu-img create data.raw 10G</command> will not be
-    displayed in the <command>virt-manager</command> pool section. A
-    &vmguest; started directly with the <command>qemu-system-arch</command>
-    command will not be visible under &libvirt;. So you should be careful if
-    using out-of-band management tools and keep in mind their usage probably
-    will not be reflected in other virtualization tools.
+    &suse; strongly recommends using the &libvirt; framework to configure,
+    manage, and operate &vmhost;s, containers and &vmguest;. It offers a single
+    interface (GUI and shell) for all supported virtualization technologies
+    and therefore is easier to use than the hypervisor-specific tools.
    </para>
-   <note>
-    <para>
-     Read
-     <link xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/cha_libvirt_overview.html#">&libvirt;
-     overview </link> for more information.
-    </para>
-   </note>
+   <para>
+    Using libvirt and hypervisor-specific tools at the same time is not
+    recommended, because changes done with the hypervisor-specific tools may
+    not be recognized by the libvirt toolset. See
+     <link
+       xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/cha_libvirt_overview.html"/>
+     for more information on libvirt.
+   </para>
   </sect2>
 
   <sect2 xml:id="vt.best.intro.qemu">
    <title>qemu-system-i386 Compared to qemu-system-x86_64</title>
-   <remark>Lin 20150808: Should we add some explanation about how to enable/disable kvm
-   with qemu-system-arch</remark>
+   <remark>Lin 20150808: Should we add some explanation about how to
+   enable/disable kvm with qemu-system-arch</remark>
    <para>
-    Just as a modern 64-bit x86 PC supports running a 32-bit OS and a 64-bit
-    OS, <command>qemu-system-x86_64</command> runs 32-bit OS's perfectly
-    fine, and in fact usually provides better performance to 32-bit guests
-    than <command>qemu-system-i386</command>, which provides a 32- bit guest
-    environment only. Hence we recommend using
-    <command>qemu-system-x86_64</command> over
-    <command>qemu-system-i386</command> for all guest types. Where
-    <command>qemu-system-i386</command> is known to perform better is in
-    configurations that SUSE does not support.
+    Similar to real 64-bit PC hardware, <command>qemu-system-x86_64</command>
+    supports &vmguest;s running a 32-bit or a 64-bit operating system. Because
+    <command>qemu-system-x86_64</command> usually also provides better
+    performance for 32-bit guests, &suse; generally recomends using
+    <command>qemu-system-x86_64</command> (sceanrios where
+    <command>qemu-system-i386</command> is known to perform better are not
+    supported by &suse;).
    </para>
   </sect2>
  </sect1>
- <sect1>
+ <sect1 xml:id="vt.best.io">
   <title>I/O in Virtualization</title>
 
   <para>
-   SUSE products support various I/O Virtualization technologies. The
-   following table lists advantages and drawbacks of each. For more
-   information about I/O in virtualization refer to
-   <link
-   xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/sec_vt_io.html">Virtualization
-   Guide, I/O in Virtualization</link>.
+   SUSE products support various I/O Virtualization technologies. The following
+   table lists advantages and disadvantages of each technology. For more
+   information about I/O in virtualization refer to the <link
+   xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/sec_vt_io.html">I/O in Virtualization</link> chapter in the <citetitle>&productname;
+   &productnumber; Virtualization Guide</citetitle>.
   </para>
 
   <table>
    <title>I/O Virtualization Solutions</title>
    <tgroup cols="3">
     <colspec colnum="1" colname="1" colwidth="20%"/>
-    <colspec colnum="2" colname="2" colwidth=""/>
-    <colspec colnum="1" colname="1" colwidth=""/>
+    <colspec colnum="2" colname="2" colwidth="40%"/>
+    <colspec colnum="1" colname="1" colwidth="40%"/>
     <thead>
      <row>
       <entry>
@@ -229,139 +217,133 @@
       </entry>
       <entry>
        <para>
-        Advantages
+        Advantage
        </para>
       </entry>
       <entry>
        <para>
-        Drawbacks
+        Disadvantage
        </para>
       </entry>
      </row>
     </thead>
     <tbody>
      <row>
-      <entry>
+      <entry morerows="3">
        <para>
         Device Assignment
-       </para>
-       <para>
         (pass-through)
        </para>
       </entry>
       <entry>
-       <itemizedlist>
-        <listitem>
-         <para>
-          Device accessed directly by the guest
-         </para>
-        </listitem>
-        <listitem>
-         <para>
-          High performance
-         </para>
-        </listitem>
-       </itemizedlist>
+       <para>
+        Device accessed directly by the guest
+       </para>
       </entry>
       <entry>
-       <itemizedlist>
-        <listitem>
-         <para>
-          No sharing among multiple guests
-         </para>
-        </listitem>
-        <listitem>
-         <para>
-          Live migration is complex
-         </para>
-        </listitem>
-        <listitem>
-         <para>
-          PCI device limit is 8 per guest
-         </para>
-        </listitem>
-        <listitem>
-         <para>
-          Limited number of slots on a server
-         </para>
-        </listitem>
-       </itemizedlist>
+       <para>
+        No sharing among multiple guests
+       </para>
       </entry>
      </row>
      <row>
       <entry>
        <para>
-        Full virtualization
+        High performance
        </para>
+      </entry>
+      <entry>
        <para>
+        Live migration is complex
+       </para>
+      </entry>
+     </row>
+     <row>
+      <entry>
+       <para/>
+      </entry>
+      <entry>
+       <para>
+        PCI device limit is 8 per guest
+       </para>
+      </entry>
+     </row>
+     <row>
+      <entry>
+       <para/>
+      </entry>
+      <entry>
+       <para>
+        Limited number of slots on a server
+       </para>
+      </entry>
+     </row>
+     <row>
+      <entry morerows="1">
+       <para>
+        Full virtualization
         (IDE, SATA, SCSI, e1000)
        </para>
       </entry>
       <entry>
-       <itemizedlist>
-        <listitem>
-         <para>
-          &vmguest; compatibility
-         </para>
-        </listitem>
-        <listitem>
-         <para>
-          Easy for live migration
-         </para>
-        </listitem>
-       </itemizedlist>
+       <para>
+        &vmguest; compatibility
+       </para>
       </entry>
       <entry>
-       <itemizedlist>
-        <listitem>
-         <para>
-          Bad performance
-         </para>
-        </listitem>
-        <listitem>
-         <para>
-          Emulated operation
-         </para>
-        </listitem>
-       </itemizedlist>
+       <para>
+        Bad performance
+       </para>
       </entry>
      </row>
      <row>
       <entry>
        <para>
-        Para-virtualization
+        Easy for live migration
        </para>
+      </entry>
+      <entry>
        <para>
+        Emulated operation
+       </para>
+      </entry>
+     </row>
+     <row>
+      <entry morerows="2">
+       <para>
+        Para-virtualization
         (virtio-blk, virtio-net, virtio-scsi)
        </para>
       </entry>
       <entry>
-       <itemizedlist>
-        <listitem>
-         <para>
-          Good performance
-         </para>
-        </listitem>
-        <listitem>
-         <para>
-          Easy for live migration
-         </para>
-        </listitem>
-        <listitem>
-         <para>
-          Efficient host communication with &vmguest;
-         </para>
-        </listitem>
-       </itemizedlist>
+       <para>
+        Good performance
+       </para>
       </entry>
       <entry>
-       <itemizedlist>
-        <listitem>
-         <para>
-          Modified guest (PV drivers)
-         </para>
-        </listitem>
-       </itemizedlist>
+       <para>
+        Modified guest (PV drivers)
+       </para>
+      </entry>
+     </row>
+     <row>
+      <entry>
+       <para>
+        Easy for live migration
+       </para>
+      </entry>
+      <entry>
+       <para/>
+      </entry>
+     </row>
+     <row>
+      <entry>
+       <para>
+        Efficient host communication with &vmguest;
+       </para>
+      </entry>
+      <entry>
+       <para/>
       </entry>
      </row>
     </tbody>
@@ -377,32 +359,34 @@
    <title>Memory and Pages</title>
    <para>
     Linux manages memory in units called pages. On most systems the default
-    page size is 4 KB. Linux and the CPU need to know which pages belongs to
-    which process. That information is stored in a page table. If you have a
-    lot of processes running, it takes more time to find where the memory is
-    mapped, due to the time required to search the page table. To speed up
-    the search of the table, the TLB (Translation Lookaside Buffer) was
-    invented. But on a system with a lot of memory the TLB is not enough. To
-    avoid any fallback to normal page table (resulting in a cache miss,
-    which is time consuming), huge pages can be used. Using huge pages will
-    reduce TLB overhead and TLB misses (pagewalk). A host with 32 GB
-    (32*1014*1024 = 33554432KB) of memory and a 4 KB page size has a TLB
-    with: <emphasis>3355443/4 = 8388608</emphasis> entries. Using a 2 MB
-    (2048 KB) page size, the TLB only has <emphasis>3355443/ 2048 =
-    16384</emphasis> entries, greatly reducing TLB misses.
+    page size is 4 KB. Linux and the CPU need to know which pages belong to
+    which process. That information is stored in a page table. If a lot of
+    processes are running, it takes more time to find where the memory is
+    mapped, due to the time required to search the page table. To speed up the
+    search, the TLB (Translation Lookaside Buffer) was invented. But on a
+    system with a lot of memory the TLB is not enough. To avoid any fallback to
+    normal page table (resulting in a cache miss, which is time consuming),
+    huge pages can be used. Using huge pages will reduce TLB overhead and TLB
+    misses (pagewalk). A host with 32 GB (32*1014*1024 = 33,554,432 KB) of
+    memory and a 4 KB page size has a TLB with: <emphasis>33,554,432/4 =
+    8,388,608</emphasis> entries. Using a 2 MB (2048 KB) page size, the TLB
+    only has <emphasis>33554432/2048 = 16384</emphasis> entries, considerably
+    reducing TLB misses.
    </para>
-   <sect3>
-    <title>Huge Pages</title>
+   <sect3 xml:id="vt.best.mem.huge_pages">
+    <title>Configuring the &vmhost; and the &vmguest; to use Huge Pages</title>
     <para>
      Current CPU architectures support larger pages than 4 KB: huge pages.
      To determine the size of huge pages available on your system (could be
-     2 MB or 1 GB), check the flag in <filename>/proc/cpuinfo</filename>.
+     2 MB or 1 GB), check the <literal>flags</literal> line in the output of
+     <filename>/proc/cpuinfo</filename> for occurrences of
+     <literal>pse</literal> and/or <literal>pdpe1gb</literal>.
     </para>
     <table>
-     <title>DETERMINE HUGE PAGES SIZE</title>
+     <title>Determine the Available Huge Pages Size</title>
      <tgroup cols="2">
-      <colspec colnum="1" colname="1" colwidth="10%"/>
-      <colspec colnum="2" colname="2" colwidth=""/>
+      <colspec colnum="1" colname="1" colwidth="30%"/>
+      <colspec colnum="2" colname="2" colwidth="70%"/>
       <thead>
        <row>
         <entry>
@@ -458,14 +442,14 @@
      </tgroup>
     </table>
     <para>
-     Using huge pages should improve performance of &vmguest; and reduce
+     Using huge pages improves performance of &vmguest; and reduces
      host memory consumption.
     </para>
     <para>
      By default the system uses THP, to make huge pages available on your
      system you need to activate it at boot time with
-     <option>hugepages=1</option>, and optionally add the huge pages size
-     with <option>hugepagesz=2MB</option>.
+     <option>hugepages=1</option>, and, optionally, add the huge pages size
+     with, for example, <option>hugepagesz=2MB</option>.
     </para>
     <note>
      <title>1 GB huge pages</title>
@@ -475,47 +459,50 @@
      </para>
     </note>
     <para>
-     To allocate and use huge page table (HugeTlbPage) you need to mount
+     To allocate and use the huge page table (HugeTlbPage) you need to mount
      <filename>hugetlbfs</filename> with correct permissions.
     </para>
+    <note>
+     <title>Huge Pages: Restrictions</title>
+     <para>
+      Even if huge pages provide the best performance, they do come with
+      some drawbacks. You lose features such as Memory ballooning (see
+      <xref linkend="vt.best.virtio.balloon"/>), KSM (see
+      <xref linkend="vt.best.perf.ksm"/>, and huge pages cannot be swapped.
+     </para>
+    </note>
     <procedure>
+     <title>Configuring the use of huge pages</title>
      <step>
       <para>
-       Mount <option>hugetlbfs</option> to
+       Mount <literal>hugetlbfs</literal> to
        <filename>/dev/hugepages</filename>:
       </para>
-<screen># mount -t hugetlbfs hugetlbfs /dev/hugepages</screen>
+      <screen># mount -t hugetlbfs hugetlbfs /dev/hugepages</screen>
      </step>
      <step>
       <para>
-       To reserve memory for huge pages use <command>sysctl</command> or
-       <command>echo <replaceable>NUMBER</replaceable></command>. If your
-       system has a <emphasis>Huge pagesize</emphasis> of 2 MB (2048 KB),
-       and you want to reserve 1 GB (1048576KB) for your &vmguest;, you need
-       <emphasis>1048576/2048=512</emphasis> pages in the pool.
+       To reserve memory for huge pages use the <command>sysctl</command>. If
+       your system has a huge page size of 2 MB (2048 KB), and you want to
+       reserve 1 GB (1,048,576 KB) for your &vmguest;, you need
+       <emphasis>1,048,576/2048=512</emphasis> pages in the pool:
       </para>
-<screen># sysctl vm.nr_hugepages=512</screen>
+      <screen># sysctl vm.nr_hugepages=512</screen>
       <para>
-       Or:
+       The value is written to <filename>/proc/sys/vm/nr_hugepages</filename>
+       and represents the current number of <emphasis>persistent</emphasis>
+       huge pages in the kernel's huge page
+       pool. <emphasis>Persistent</emphasis> huge pages will be returned to the
+       huge page pool when freed by a task.
       </para>
-<screen># echo 512 > /proc/sys/vm/nr_hugepages<co
-      xml:id="co.hp.nrhp"/></screen>
-      <calloutlist>
-       <callout arearefs="co.hp.nrhp">
-        <para>
-         Current number of <emphasis>persistent</emphasis> huge pages in the
-         kernel's huge page pool. <emphasis>Persistent</emphasis> huge pages
-         will be returned to the huge page pool when freed by a task
-        </para>
-       </callout>
-      </calloutlist>
      </step>
      <step>
       <para>
        Add the <emphasis>memoryBacking</emphasis> element in the &vmguest;
-       config:
+       configuration file (by running <command>virsh edit
+       <replaceable>CONFIGURATION</replaceable></command>).
       </para>
-<screen>&lt;memoryBacking&gt;
+      <screen>&lt;memoryBacking&gt;
   &lt;hugepages/&gt;
 &lt;/memoryBacking&gt;</screen>
      </step>
@@ -523,7 +510,7 @@
       <para>
        Start your &vmguest; and check on the host whether it uses hugepages:
       </para>
-<screen># cat /proc/meminfo | grep HugePages_
+      <screen># cat /proc/meminfo | grep HugePages_
 HugePages_Total:<co xml:id="co.hp.total"/>    512
 HugePages_Free:<co xml:id="co.hp.free"/>       92
 HugePages_Rsvd:<co xml:id="co.hp.rsvd"/>        0
@@ -556,20 +543,12 @@ HugePages_Surp:<co xml:id="co.hp.surp"/>        0</screen>
       </calloutlist>
      </step>
     </procedure>
-    <note>
-     <para>
-      Even if huge pages provide the best performance, they do come with
-      some drawbacks. You lose features such as Memory ballooning (see
-      <xref linkend="vt.best.virtio.balloon"/>), KSM (see
-      <xref linkend="vt.best.perf.ksm"/>, and huge pages cannot be swapped.
-     </para>
-    </note>
    </sect3>
    <sect3 xml:id="vt.best.mem.thp">
     <title>Transparent Huge Pages</title>
     <para>
      Transparent huge pages (THP) provide a way to dynamically allocate huge
-     pages with the <command>khugepaged</command> kernel thread, instead of
+     pages with the <command>khugepaged</command> kernel thread, rather than
      manually managing their allocation and use. Workloads with contiguous
      memory access patterns can benefit greatly from THP. A 1000 fold
      decrease in page faults can be observed when running synthetic
@@ -577,16 +556,21 @@ HugePages_Surp:<co xml:id="co.hp.surp"/>        0</screen>
      with sparse memory access patterns (like databases) may perform poorly
      with THP. In such cases it may be preferable to disable THP by adding
      the kernel parameter <option>transparent_hugepage=never</option>,
-     rebuild your grub2 configuration, and reboot. Verify THP is disabled
+     rebuild your grub2 configuration, and reboot. Verify if THP is disabled
      with:
     </para>
-<screen># cat /sys/kernel/mm/transparent_hugepage/enabled
+    <screen>&prompt.root;cat /sys/kernel/mm/transparent_hugepage/enabled
 always madvise [never]</screen>
-    <note>
      <para>
-      THP is not available under &xen;
+      If disabled, the value <literal>never</literal> is shown in square
+      brackets like in the example above.
      </para>
-    </note>
+     <note>
+      <title>&xen;</title>
+      <para>
+       THP is not available under &xen;
+      </para>
+     </note>
    </sect3>
    <sect3 xml:id="vt.best.mem.hot">
     <title>Memory Hotplug</title>
@@ -594,10 +578,11 @@ always madvise [never]</screen>
      To optimize the usage of your host memory, it may be useful to hot plug
      more memory for a running &vmguest; when required. To support memory
      hot-plugging, you must first configure the
-     <emphasis>&lt;maxMemory&gt;</emphasis> tag in the XML configuration:
+     <emphasis>&lt;maxMemory&gt;</emphasis> tag in the &vmguest;'s
+     configuration file:
     </para>
-<screen>&lt;maxMemory<co xml:id="co.mem.hot.max"/> slots='16'<co   xml:id="co.mem.hot.slots"/> unit='KiB'&gt;20971520<co   xml:id="co.mem.hot.size"/>&lt;/maxMemory&gt;
-  &lt;memory<co   xml:id="co.mem.hot.mem"/> unit='KiB'&gt;1048576&lt;/memory&gt;
+<screen>&lt;maxMemory<co xml:id="co.mem.hot.max"/> slots='16'<co xml:id="co.mem.hot.slots"/> unit='KiB'&gt;20971520<co xml:id="co.mem.hot.size"/>&lt;/maxMemory&gt;
+  &lt;memory<co xml:id="co.mem.hot.mem"/> unit='KiB'&gt;1048576&lt;/memory&gt;
 &lt;currentMemory<co xml:id="co.mem.hot.curr"/> unit='KiB'&gt;1048576&lt;/currentMemory&gt;</screen>
     <calloutlist>
      <callout arearefs="co.mem.hot.max">
@@ -669,22 +654,25 @@ always madvise [never]</screen>
      </callout>
     </calloutlist>
     <para>
-     To hot plug a memory devices into the slots, use <command>virsh
-     attach-device vm-name mem-dev.xml</command>.
+     To hot plug memory devices into the slots, create a file
+     <filename>mem-dev.xml</filename> like the following:
     </para>
-<screen># cat mem-dev.xml
-&lt;memory model='dimm'&gt;
+    <screen>&lt;memory model='dimm'&gt;
   &lt;target&gt;
   &lt;size unit='KiB'>524287&lt;/size&gt;
   &lt;node>0&lt;/node&gt;
   &lt;/target&gt;
 &lt;/memory&gt;</screen>
     <para>
+     And attach it with the following command:
+    </para>
+    <screen>virsh attach-device vm-name mem-dev.xml</screen>
+    <para>
      For memory device hotplug, the guest must have at least 1 NUMA cell
      defined (see <xref linkend="vt.best.numa.topo"/>).
     </para>
    </sect3>
-   <sect3>
+   <sect3 xml:id="vt.best.mem.xen">
     <title>&xen;-specific Memory Notes</title>
     <sect4>
      <title>Managing Domain-0 Memory</title>
@@ -696,7 +684,7 @@ always madvise [never]</screen>
       virtual machine. This process is called "autoballooning".
      </para>
      <para>
-      Autoballooning has several drawbacks:
+      Autoballooning has several limitations:
      </para>
      <itemizedlist>
       <listitem>
@@ -738,19 +726,25 @@ always madvise [never]</screen>
       memory of Domain-0 to 8GB, add <option>dom0_mem=8G</option> to the
       &xen; hypervisor parameters.
      </para>
-     <para>
-      To set dom0_mem on SLE11 products, modify
-      <filename>/boot/grub/menu.lst</filename>, adding
-      <option>dom0_mem=XX</option> to the &xen; hypervisor (xen.gz)
-      parameters. The change will be applied at next reboot.
-     </para>
-     <para>
-      To set dom0_mem on SLE12 products, modify
-      <filename>/etc/default/grub</filename>, adding
-      <option>dom0_mem=XX</option> to
-      <option>GRUB_CMDLINE_XEN_DEFAULT</option>. See
-      <xref linkend="vt.best.kernel.parameter"/> for more information.
-     </para>
+     <itemizedlist>
+      <listitem>
+       <para>
+        To set dom0_mem on SLE11 products, modify
+        <filename>/boot/grub/menu.lst</filename>, adding
+        <option>dom0_mem=XX</option> to the &xen; hypervisor (xen.gz)
+        parameters. The change will be applied at next reboot.
+       </para>
+      </listitem>
+      <listitem>
+       <para>
+        To set dom0_mem on SLE12 products, modify
+        <filename>/etc/default/grub</filename>, adding
+        <option>dom0_mem=XX</option> to
+        <option>GRUB_CMDLINE_XEN_DEFAULT</option>. See <xref
+        linkend="vt.best.kernel.parameter"/> for more information.
+       </para>
+      </listitem>
+     </itemizedlist>
      <para>
       Autoballooning is enabled by default since it is extremely difficult
       to determine a predefined amount of memory required by Domain-0.
@@ -761,15 +755,15 @@ always madvise [never]</screen>
      </para>
     </sect4>
     <sect4>
-     <title>xenstore in tmpfs</title>
+     <title>xenstore in <systemitem>tmpfs</systemitem></title>
      <para>
       When using &xen;, it is recommended to place the xenstore database on
-      tmpfs. xenstore is used as a control plane by the xm/xend and xl/libxl
-      toolstacks and the frontend and backend drivers servicing domain I/O
-      devices. The load on xenstore increases linearly as the number of
-      running domains increase. If you anticipate hosting many &vmguest; on
-      a &xen; host, move the xenstore database onto tmpfs to improve overall
-      performance of the control plane. Mount
+      <systemitem>tmpfs</systemitem>. xenstore is used as a control plane by
+      the xm/xend and xl/libxl toolstacks and the frontend and backend drivers
+      servicing domain I/O devices. The load on xenstore increases linearly as
+      the number of running domains increase. If you anticipate hosting many
+      &vmguest; on a &xen; host, move the xenstore database onto tmpfs to
+      improve overall performance of the control plane. Mount the
       <filename>/var/lib/xenstored</filename> directory on tmpfs:
      </para>
 <screen># mount -t tmpfs tmpfs /var/lib/xenstored/</screen>
@@ -780,85 +774,89 @@ always madvise [never]</screen>
   <sect2 xml:id="vt.best.perf.ksm">
    <title>KSM and Page Sharing</title>
    <para>
-    Kernel Samepage Merging is a kernel feature that allows packing more
-    virtual machines into physical memory, by sharing the data common
-    between them. The KSM daemon ksmd periodically scans user memory looking
-    for pages of identical content which can be replaced by a single
-    write-protected page. The duplicate pages are then available to run more
-    &vmguest; on the host. You can enable KSM with <command>echo 1 &gt;
-    /sys/kernel/mm/ksm/run</command>. One advantage of using KSM from a
-    &vmguest; perspective is that all guest memory is backed by host
-    anonymous memory, so you can share <emphasis>pagecache</emphasis>,
-    <emphasis>tmpfs</emphasis> or any kind of memory allocated in the guest.
+    Kernel Samepage Merging is a kernel feature that allows for lesser memory
+    consumption on the &vmhost; by sharing data &vmguest;s have in common. The
+    KSM daemon <systemitem class="daemon">ksmd</systemitem> periodically scans
+    user memory looking for pages of identical content which can be replaced by
+    a single write-protected page. To enable KSM run:
+   </para>
+   <screen>echo 1 &gt; /sys/kernel/mm/ksm/run</screen>
+   <para>
+    One advantage of using KSM from a &vmguest; perspective is that all guest
+    memory is backed by host anonymous memory, so you can share
+    <emphasis>pagecache</emphasis>, <emphasis>tmpfs</emphasis> or any kind of
+    memory allocated in the guest.
    </para>
    <para>
-    KSM is controlled by <emphasis>sysfs</emphasis>. You can check KSM's
+    KSM is controlled by <systemitem>sysfs</systemitem>. You can check KSM's
     values in <filename>/sys/kernel/mm/ksm/</filename>:
    </para>
    <itemizedlist>
     <listitem>
      <para>
-      <emphasis>pages_shared</emphasis>: How many shared pages are being
-      used (read only).
+      <literal>pages_shared</literal>: The number of shared pages that are
+      being used (read only).
      </para>
     </listitem>
     <listitem>
      <para>
-      <emphasis>pages_sharing</emphasis>: How many sites are sharing the
+      <literal>pages_sharing</literal>: The number of sites sharing the
       pages (read only).
      </para>
     </listitem>
     <listitem>
      <para>
-      <emphasis>pages_unshared</emphasis>: How many pages are unique but
-      repeatedly checked for merging (read only).
+      <literal>pages_unshared</literal>: The number of pages that are unique
+      and repeatedly checked for merging (read only).
      </para>
     </listitem>
     <listitem>
      <para>
-      <emphasis>pages_volatile</emphasis>: How many pages are changing too
-      fast to be considered for merging (read only).
+      <literal>pages_volatile</literal>: The number of pages that are changing
+      too fast to be considered for merging (read only).
      </para>
     </listitem>
     <listitem>
      <para>
-      <emphasis>full_scans</emphasis>: How many times all mergeable areas
+      <literal>full_scans</literal>: The number of times all mergeable areas
       have been scanned (read only).
      </para>
     </listitem>
     <listitem>
      <para>
-      <emphasis>sleep_millisecs</emphasis>: How many milliseconds
-      <command>ksmd</command> should sleep before the next scan. A low value
-      will overuse the CPU, consuming CPU time that could be used for other
-      tasks. A value greater than <option>1000</option> is recommended.
+      <literal>sleep_millisecs</literal>: The number of milliseconds
+      <systemitem class="daemon">ksmd</systemitem> should sleep before the next
+      scan. A low value will overuse the CPU, consuming CPU time that could be
+      used for other tasks. A value greater than <literal>1000</literal> is
+      recommended.
      </para>
     </listitem>
     <listitem>
      <para>
-      <emphasis>pages_to_scan</emphasis>: How many present pages to scan
+      <literal>pages_to_scan</literal>: The number of present pages to scan
       before ksmd goes to sleep. A high value will overuse the CPU. It is
-      recommended to start with a value of <option>1000</option>, and then
+      recommended to start with a value of <literal>1000</literal>, and then
       adjust as necessary based on the KSM results observed while testing
       your deployment.
      </para>
     </listitem>
     <listitem>
      <para>
-      <emphasis>merge_across_nodes</emphasis>: by default the system merges
-      pages across NUMA nodes. Set this option to <option>0</option> to
+      <literal>merge_across_nodes</literal>: by default the system merges
+      pages across NUMA nodes. Set this option to <literal>0</literal> to
       disable this behavior.
      </para>
     </listitem>
    </itemizedlist>
    <note>
+    <title>Usecases</title>
     <para>
      KSM is a good technique to over-commit host memory when running
      multiple instances of the same application or &vmguest;. When
      applications and &vmguest; are heterogeneous and do not share any
      common data, it is preferable to disable KSM. In a mixed heterogeneous
      and homogeneous environment, KSM can be enabled on the host but
-     disabled on a per &vmguest; basis. Use <command> virsh edit</command>
+     disabled on a per &vmguest; basis. Use <command>virsh edit</command>
      to disable page sharing of a &vmguest; by adding the following to the
      guest's XML configuration:
     </para>
@@ -867,6 +865,7 @@ always madvise [never]</screen>
 &lt;/memoryBacking&gt;</screen>
    </note>
    <warning>
+    <title>Avoid Out-Of-Memory Conditions</title>
     <para>
      KSM can free up some memory on the host system, but the administrator
      should also reserve enough swap to avoid out-of-memory conditions in
@@ -875,60 +874,63 @@ always madvise [never]</screen>
     </para>
    </warning>
    <warning>
+    <title>Memory Access Latencies</title>
     <para>
      By default, KSM will merge common pages across NUMA nodes. This may
      degrade &vmguest; performance if the merged, common page is now located
      on a distant NUMA node, relative to the node running the &vmguest;
      VCPUs. If increased memory access latencies are noticed in the
      &vmguest;, disable cross-node merging with the <emphasis>
-     merge_across_nodes</emphasis> sysfs control: <command>echo 0 &gt;
-     /sys/kernel/mm/ksm/merge_across_nodes</command>.
+     merge_across_nodes</emphasis> sysfs control:
     </para>
+    <screen>echo 0 &gt /sys/kernel/mm/ksm/merge_across_nodes</screen>
    </warning>
   </sect2>
 
   <sect2 xml:id="vt.best.perf.swap">
    <title>Swapping</title>
    <para>
-    <emphasis>Swap</emphasis> is mostly used by the system to store
+    <emphasis>Swap</emphasis> is usually used by the system to store
     underused physical memory (low usage, or not accessed for a long time).
     To prevent the system running out of memory, setting up a minimum swap
     is highly recommended.
    </para>
-   <sect3>
-    <title>swappiness</title>
+   <sect3 xml:id="vt.best.perf.swap.swapiness">
+    <title><literal>swappiness</literal></title>
     <para>
-     The <emphasis>swappiness</emphasis> setting controls your systems swap
-     behavior. It defines how memory pages are swapped to disk. A high value
-     of <emphasis>swappiness</emphasis> results in a system that swaps more.
-     Values available are from <option>0</option> to <option>100</option>. A
-     value of <option>100</option> tells the system to find inactive pages
-     and put them in swap. A value of <option>0</option> reduces the systems
+     The <literal>swappiness</literal> setting controls your system's swap
+     behavior. It defines how memory pages are swapped to disk. A high value of
+     <emphasis>swappiness</emphasis> results in a system that swaps more often.
+     Available values range from <literal>0</literal> to
+     <literal>100</literal>. A value of <literal>100<</literal>> tells the
+     system to find inactive pages and put them in swap. A value of
+     <option>0</option> disables swapping.
+     <!-- reduces the systems
      tendency to swap userspace processes but does not disable swap
-     completely (this is now the case with kernel =&gt; 3.5).
+     completely (this is now the case with kernel =&gt; 3.5). -->
     </para>
     <para>
-     To change the value and do some testing on a live system, you need to
-     make an echo of the value, and check your system memory usage (i.e.,
-     with the <command>free</command> command):
+     To change the value and do some testing on a live system, change the value
+     of <filename>/proc/sys/vm/swappiness</filename> on the fly and check the
+     memory usage afterwards:
     </para>
-<screen># echo 35 &gt; /proc/sys/vm/swappiness</screen>
-<screen># free
+<screen>&prompt.root;echo 35 &gt; /proc/sys/vm/swappiness</screen>
+<screen>&prompt.root;free -h
 total       used       free     shared    buffers     cached
 Mem:      24616680    4991492   19625188     167056     144340    2152408
 -/+ buffers/cache:    2694744   21921936
 Swap:      6171644          0    6171644</screen>
     <para>
-     To get this permanently add a line in
-     <filename>/etc/systcl.conf</filename>:
+     To permanently set a swapiness value, add a line in
+     <filename>/etc/systcl.conf</filename>, for example:
     </para>
 <screen>vm.swappiness = 35</screen>
     <para>
      You can also control the swap by using the
-     <emphasis>swap_hard_limit</emphasis> element in the XML configuration
-     of your &vmguest;. It is highly recommended to do some testing before
-     setting this parameter and using it in a production environment as the
-     host can kill the domain if the value is too low.
+     <emphasis>swap_hard_limit</emphasis> element in the XML configuration of
+     your &vmguest;. It is highly recommended to do some testing before setting
+     this parameter and using it in a production environment, because the host
+     can kill the domain if the value is too low.
     </para>
 <screen>&lt;memtune&gt;<co xml:id="co.mem.1"/>
   &lt;hard_limit unit='G'&gt;1&lt;/hard_limit&gt;<co xml:id="co.mem.hard"/>
@@ -939,29 +941,30 @@ Swap:      6171644          0    6171644</screen>
      <callout arearefs="co.mem.1">
       <para>
        This element provides memory tunable parameters for the domain. If
-       this is omitted, it defaults to the OS provided defaults
+       this is omitted, it defaults to the defaults provided b ythe operating
+       system.
       </para>
      </callout>
      <callout arearefs="co.mem.hard">
       <para>
        Maximum memory the guest can use. To avoid any problems on the
-       &vmguest; it is strongly recommended to do not use this parameter
+       &vmguest; it is strongly recommended to do not use this parameter.
       </para>
      </callout>
      <callout arearefs="co.mem.soft">
       <para>
-       The memory limit to enforce during memory contention
+       The memory limit to enforce during memory contention.
       </para>
      </callout>
      <callout arearefs="co.mem.swap">
       <para>
-       The maximum memory plus swap the &vmguest; can use
+       The maximum memory plus swap the &vmguest; can use.
       </para>
      </callout>
     </calloutlist>
    </sect3>
   </sect2>
-
+<!-- ... -->
   <sect2 xml:id="vt.best.perf.io">
    <title>I/O Scheduler</title>
    <para>
