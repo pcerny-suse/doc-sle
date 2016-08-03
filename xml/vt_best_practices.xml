@@ -191,172 +191,22 @@
    </para>
   </sect2>
  </sect1>
- <sect1 xml:id="vt.best.io">
-  <title>I/O in Virtualization</title>
+
+ <sect1 xml:id="vt.best.hostlevel">
+  <title>&vmhost; Configuration and Ressource Allocation</title>
 
   <para>
-   SUSE products support various I/O Virtualization technologies. The following
-   table lists advantages and disadvantages of each technology. For more
-   information about I/O in virtualization refer to the <link
-   xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/sec_vt_io.html">I/O in Virtualization</link> chapter in the <citetitle>&productname;
-   &productnumber; Virtualization Guide</citetitle>.
+   Allocation of resources for &vmguest; is a crucial point when administrating
+   virtual machines. While assigning ressources to &vmguest;, you need to be
+   aware that overcommiting ressources may affect the performance of the
+   &vmhost; and the &vmguest;s. If all &vmguest;s request all their resources
+   simultanesously, the host needs to be able to provide all of them. If not,
+   the host's performance will be negatively affected and this will in turn
+   also have negative effects of the &vmguest;'s performance.
   </para>
 
-  <table>
-   <title>I/O Virtualization Solutions</title>
-   <tgroup cols="3">
-    <colspec colnum="1" colname="1" colwidth="20%"/>
-    <colspec colnum="2" colname="2" colwidth="40%"/>
-    <colspec colnum="1" colname="1" colwidth="40%"/>
-    <thead>
-     <row>
-      <entry>
-       <para>
-        Technology
-       </para>
-      </entry>
-      <entry>
-       <para>
-        Advantage
-       </para>
-      </entry>
-      <entry>
-       <para>
-        Disadvantage
-       </para>
-      </entry>
-     </row>
-    </thead>
-    <tbody>
-     <row>
-      <entry morerows="3">
-       <para>
-        Device Assignment
-        (pass-through)
-       </para>
-      </entry>
-      <entry>
-       <para>
-        Device accessed directly by the guest
-       </para>
-      </entry>
-      <entry>
-       <para>
-        No sharing among multiple guests
-       </para>
-      </entry>
-     </row>
-     <row>
-      <entry>
-       <para>
-        High performance
-       </para>
-      </entry>
-      <entry>
-       <para>
-        Live migration is complex
-       </para>
-      </entry>
-     </row>
-     <row>
-      <entry>
-       <para/>
-      </entry>
-      <entry>
-       <para>
-        PCI device limit is 8 per guest
-       </para>
-      </entry>
-     </row>
-     <row>
-      <entry>
-       <para/>
-      </entry>
-      <entry>
-       <para>
-        Limited number of slots on a server
-       </para>
-      </entry>
-     </row>
-     <row>
-      <entry morerows="1">
-       <para>
-        Full virtualization
-        (IDE, SATA, SCSI, e1000)
-       </para>
-      </entry>
-      <entry>
-       <para>
-        &vmguest; compatibility
-       </para>
-      </entry>
-      <entry>
-       <para>
-        Bad performance
-       </para>
-      </entry>
-     </row>
-     <row>
-      <entry>
-       <para>
-        Easy for live migration
-       </para>
-      </entry>
-      <entry>
-       <para>
-        Emulated operation
-       </para>
-      </entry>
-     </row>
-     <row>
-      <entry morerows="2">
-       <para>
-        Para-virtualization
-        (virtio-blk, virtio-net, virtio-scsi)
-       </para>
-      </entry>
-      <entry>
-       <para>
-        Good performance
-       </para>
-      </entry>
-      <entry>
-       <para>
-        Modified guest (PV drivers)
-       </para>
-      </entry>
-     </row>
-     <row>
-      <entry>
-       <para>
-        Easy for live migration
-       </para>
-      </entry>
-      <entry>
-       <para/>
-      </entry>
-     </row>
-     <row>
-      <entry>
-       <para>
-        Efficient host communication with &vmguest;
-       </para>
-      </entry>
-      <entry>
-       <para/>
-      </entry>
-     </row>
-    </tbody>
-   </tgroup>
-  </table>
- </sect1>
- <sect1 xml:id="vt.best.hostlevel">
-  <title>Host-Level Configuration and Settings</title>
-
-  <para></para>
-
   <sect2 xml:id="vt.best.mem">
-   <title>Memory and Pages</title>
+   <title>Memory</title>
    <para>
     Linux manages memory in units called pages. On most systems the default
     page size is 4 KB. Linux and the CPU need to know which pages belong to
@@ -769,126 +619,125 @@ always madvise [never]</screen>
 <screen># mount -t tmpfs tmpfs /var/lib/xenstored/</screen>
     </sect4>
    </sect3>
-  </sect2>
-
-  <sect2 xml:id="vt.best.perf.ksm">
-   <title>KSM and Page Sharing</title>
-   <para>
-    Kernel Samepage Merging is a kernel feature that allows for lesser memory
-    consumption on the &vmhost; by sharing data &vmguest;s have in common. The
-    KSM daemon <systemitem class="daemon">ksmd</systemitem> periodically scans
-    user memory looking for pages of identical content which can be replaced by
-    a single write-protected page. To enable KSM run:
-   </para>
-   <screen>echo 1 &gt; /sys/kernel/mm/ksm/run</screen>
-   <para>
-    One advantage of using KSM from a &vmguest; perspective is that all guest
-    memory is backed by host anonymous memory, so you can share
-    <emphasis>pagecache</emphasis>, <emphasis>tmpfs</emphasis> or any kind of
-    memory allocated in the guest.
-   </para>
-   <para>
-    KSM is controlled by <systemitem>sysfs</systemitem>. You can check KSM's
-    values in <filename>/sys/kernel/mm/ksm/</filename>:
-   </para>
-   <itemizedlist>
-    <listitem>
-     <para>
-      <literal>pages_shared</literal>: The number of shared pages that are
-      being used (read only).
-     </para>
-    </listitem>
-    <listitem>
-     <para>
-      <literal>pages_sharing</literal>: The number of sites sharing the
-      pages (read only).
-     </para>
-    </listitem>
-    <listitem>
-     <para>
-      <literal>pages_unshared</literal>: The number of pages that are unique
-      and repeatedly checked for merging (read only).
-     </para>
-    </listitem>
-    <listitem>
-     <para>
-      <literal>pages_volatile</literal>: The number of pages that are changing
-      too fast to be considered for merging (read only).
-     </para>
-    </listitem>
-    <listitem>
-     <para>
-      <literal>full_scans</literal>: The number of times all mergeable areas
-      have been scanned (read only).
-     </para>
-    </listitem>
-    <listitem>
-     <para>
-      <literal>sleep_millisecs</literal>: The number of milliseconds
-      <systemitem class="daemon">ksmd</systemitem> should sleep before the next
-      scan. A low value will overuse the CPU, consuming CPU time that could be
-      used for other tasks. A value greater than <literal>1000</literal> is
-      recommended.
-     </para>
-    </listitem>
-    <listitem>
-     <para>
-      <literal>pages_to_scan</literal>: The number of present pages to scan
-      before ksmd goes to sleep. A high value will overuse the CPU. It is
-      recommended to start with a value of <literal>1000</literal>, and then
-      adjust as necessary based on the KSM results observed while testing
-      your deployment.
-     </para>
-    </listitem>
-    <listitem>
-     <para>
-      <literal>merge_across_nodes</literal>: by default the system merges
-      pages across NUMA nodes. Set this option to <literal>0</literal> to
-      disable this behavior.
-     </para>
-    </listitem>
-   </itemizedlist>
-   <note>
-    <title>Usecases</title>
+   <sect3 xml:id="vt.best.perf.ksm">
+    <title>KSM and Page Sharing</title>
     <para>
-     KSM is a good technique to over-commit host memory when running
-     multiple instances of the same application or &vmguest;. When
-     applications and &vmguest; are heterogeneous and do not share any
-     common data, it is preferable to disable KSM. In a mixed heterogeneous
-     and homogeneous environment, KSM can be enabled on the host but
-     disabled on a per &vmguest; basis. Use <command>virsh edit</command>
-     to disable page sharing of a &vmguest; by adding the following to the
-     guest's XML configuration:
+     Kernel Samepage Merging is a kernel feature that allows for lesser memory
+     consumption on the &vmhost; by sharing data &vmguest;s have in common. The
+     KSM daemon <systemitem class="daemon">ksmd</systemitem> periodically scans
+     user memory looking for pages of identical content which can be replaced
+     by a single write-protected page. To enable KSM run:
     </para>
+    <screen>echo 1 &gt; /sys/kernel/mm/ksm/run</screen>
+    <para>
+     One advantage of using KSM from a &vmguest; perspective is that all guest
+     memory is backed by host anonymous memory, so you can share
+     <emphasis>pagecache</emphasis>, <emphasis>tmpfs</emphasis> or any kind of
+     memory allocated in the guest.
+    </para>
+    <para>
+     KSM is controlled by <systemitem>sysfs</systemitem>. You can check KSM's
+     values in <filename>/sys/kernel/mm/ksm/</filename>:
+    </para>
+    <itemizedlist>
+     <listitem>
+      <para>
+       <literal>pages_shared</literal>: The number of shared pages that are
+       being used (read only).
+      </para>
+     </listitem>
+     <listitem>
+      <para>
+       <literal>pages_sharing</literal>: The number of sites sharing the
+       pages (read only).
+      </para>
+     </listitem>
+     <listitem>
+      <para>
+       <literal>pages_unshared</literal>: The number of pages that are unique
+       and repeatedly checked for merging (read only).
+      </para>
+     </listitem>
+     <listitem>
+      <para>
+       <literal>pages_volatile</literal>: The number of pages that are changing
+       too fast to be considered for merging (read only).
+      </para>
+     </listitem>
+     <listitem>
+      <para>
+       <literal>full_scans</literal>: The number of times all mergeable areas
+       have been scanned (read only).
+      </para>
+     </listitem>
+     <listitem>
+      <para>
+       <literal>sleep_millisecs</literal>: The number of milliseconds
+       <systemitem class="daemon">ksmd</systemitem> should sleep before the
+       next scan. A low value will overuse the CPU, consuming CPU time that
+       could be used for other tasks. A value greater than
+       <literal>1000</literal> is recommended.
+      </para>
+     </listitem>
+     <listitem>
+      <para>
+       <literal>pages_to_scan</literal>: The number of present pages to scan
+       before ksmd goes to sleep. A high value will overuse the CPU. It is
+       recommended to start with a value of <literal>1000</literal>, and then
+       adjust as necessary based on the KSM results observed while testing
+       your deployment.
+      </para>
+     </listitem>
+     <listitem>
+      <para>
+       <literal>merge_across_nodes</literal>: by default the system merges
+       pages across NUMA nodes. Set this option to <literal>0</literal> to
+       disable this behavior.
+      </para>
+     </listitem>
+    </itemizedlist>
+    <note>
+     <title>Usecases</title>
+     <para>
+      KSM is a good technique to over-commit host memory when running
+      multiple instances of the same application or &vmguest;. When
+      applications and &vmguest; are heterogeneous and do not share any
+      common data, it is preferable to disable KSM. In a mixed heterogeneous
+      and homogeneous environment, KSM can be enabled on the host but
+      disabled on a per &vmguest; basis. Use <command>virsh edit</command>
+      to disable page sharing of a &vmguest; by adding the following to the
+      guest's XML configuration:
+     </para>
 <screen>&lt;memoryBacking&gt;
    &lt;nosharepages/&gt;
 &lt;/memoryBacking&gt;</screen>
-   </note>
-   <warning>
-    <title>Avoid Out-Of-Memory Conditions</title>
-    <para>
-     KSM can free up some memory on the host system, but the administrator
-     should also reserve enough swap to avoid out-of-memory conditions in
-     the event sharable memory decreases. A decrease in the amount of
-     sharable memory results in an increase in the use of physical memory.
-    </para>
-   </warning>
-   <warning>
-    <title>Memory Access Latencies</title>
-    <para>
-     By default, KSM will merge common pages across NUMA nodes. This may
-     degrade &vmguest; performance if the merged, common page is now located
-     on a distant NUMA node, relative to the node running the &vmguest;
-     VCPUs. If increased memory access latencies are noticed in the
-     &vmguest;, disable cross-node merging with the <emphasis>
-     merge_across_nodes</emphasis> sysfs control:
-    </para>
-    <screen>echo 0 &gt /sys/kernel/mm/ksm/merge_across_nodes</screen>
-   </warning>
+    </note>
+    <warning>
+     <title>Avoid Out-Of-Memory Conditions</title>
+     <para>
+      KSM can free up some memory on the host system, but the administrator
+      should also reserve enough swap to avoid out-of-memory conditions in the
+      event sharable memory decreases. A decrease in the amount of sharable
+      memory results in an increase in the use of physical memory.
+     </para>
+    </warning>
+    <warning>
+     <title>Memory Access Latencies</title>
+     <para>
+      By default, KSM will merge common pages across NUMA nodes. This may
+      degrade &vmguest; performance if the merged, common page is now located
+      on a distant NUMA node, relative to the node running the &vmguest;
+      VCPUs. If increased memory access latencies are noticed in the &vmguest;,
+      disable cross-node merging with the <emphasis>
+      merge_across_nodes</emphasis> sysfs control:
+     </para>
+     <screen>echo 0 &gt; /sys/kernel/mm/ksm/merge_across_nodes</screen>
+    </warning>
+   </sect3>
   </sect2>
 
   <sect2 xml:id="vt.best.perf.swap">
-   <title>Swapping</title>
+   <title>Swap</title>
    <para>
     <emphasis>Swap</emphasis> is usually used by the system to store
     underused physical memory (low usage, or not accessed for a long time).
@@ -902,7 +751,7 @@ always madvise [never]</screen>
      behavior. It defines how memory pages are swapped to disk. A high value of
      <emphasis>swappiness</emphasis> results in a system that swaps more often.
      Available values range from <literal>0</literal> to
-     <literal>100</literal>. A value of <literal>100<</literal>> tells the
+     <literal>100</literal>. A value of <literal>100</literal>> tells the
      system to find inactive pages and put them in swap. A value of
      <option>0</option> disables swapping.
      <!-- reduces the systems
@@ -964,8 +813,11 @@ Swap:      6171644          0    6171644</screen>
     </calloutlist>
    </sect3>
   </sect2>
-<!-- ... -->
-  <sect2 xml:id="vt.best.perf.io">
+
+  <sect2 xml:id="vt.best.io">
+   <title>I/O</title>
+   <para/>
+   <sect3 xml:id="vt.best.perf.io">
    <title>I/O Scheduler</title>
    <para>
     The default I/O scheduler is Completely Fair Queuing (CFQ). The main aim
@@ -979,82 +831,220 @@ Swap:      6171644          0    6171644</screen>
     and the <emphasis>deadline</emphasis> scheduler for a virtualization
     host.
    </para>
-   <sect3>
-    <title>Checking the Current I/O Scheduler</title>
-    <para>
-     To check your current I/O scheduler for your disk (replace
-     <replaceable>sdX</replaceable> by the disk you want to check):
-    </para>
-<screen># cat /sys/block/<replaceable>sdX</replaceable>/queue/scheduler
-noop [deadline] cfq</screen>
-    <para>
-     In our example the <emphasis>deadline</emphasis> scheduler is selected.
-    </para>
-   </sect3>
-   <sect3>
-    <title>Changing I/O Scheduler at Runtime</title>
-    <para>
-     You can change it at runtime with <command>echo</command>:
-    </para>
-<screen># echo noop &gt; /sys/block/<replaceable>sdX</replaceable>/queue/scheduler</screen>
-   </sect3>
-   <sect3>
-    <title>Kernel Parameters</title>
-    <para>
-     The kernel parameters are <option>elevator=deadline</option> for host
-     and <option>elevator=noop</option> for &vmguest; (change will be taken
-     into account at next reboot). This will be applied to all devices on
-     your system.
-    </para>
-    <para>
-     Changing the <option>elevator=</option> for the boot command line will
-     apply the <option>elevator</option> to all devices on your system.
-    </para>
-    <para>
-     If you want to have a different parameter for each disk, create a
-     <filename>/usr/lib/tmpfiles.d/IO_ioscheduler.conf</filename> file with:
-    </para>
-    <para>
-     See <xref linkend="vt.best.kernel.parameter"/> to get more information
-     about how to change this kernel parameter on SLE11 or SLE12.
-    </para>
-    <note>
-     <title>SLE12 and systemd</title>
+   <procedure>
+    <title>Checking and Changing the I/O Scheduler at Runtime</title>
+    <step>
      <para>
-      If you want to have a different parameter for each disk create a
-      <filename>/usr/lib/tmpfiles.d/IO_ioscheduler.conf</filename> file
-      with:
+      To check your current I/O scheduler for your disk (replace
+      <replaceable>sdX</replaceable> by the disk you want to check), run:
      </para>
+     <screen># cat /sys/block/<replaceable>sdX</replaceable>/queue/scheduler
+noop deadline [cfq]</screen>
+     <para>
+      The value in square brackets is the one currently selected
+      (<literal>cfq</literal> in the example above).
+     </para>
+    </step>
+    <step>
+     <para>
+      You can change the scheduler at runtime with the following command:
+     </para>
+<screen>echo deadline &gt; /sys/block/<replaceable>sdX</replaceable>/queue/scheduler</screen>
+    </step>
+   </procedure>
+
+   <para>
+    To permanently set an I/O scheduler for all disks of a system, use the
+    Kernel parameter <literal>elevator</literal>. the respective values are
+    <option>elevator=deadline</option> for the &vmhost;
+    and <option>elevator=noop</option> for &vmguest;s. See <xref
+    linkend="vt.best.kernel.parameter"/> for further instructions.
+   </para>
+   <para>
+    If you need to specify different I/O schedulers for each disk create the
+    file <filename>/usr/lib/tmpfiles.d/IO_ioscheduler.conf</filename> with a
+    content similar to the following example, which defines the
+    <literal>deadline</literal> scheduler for <filename>/dev/sda</filename> and
+    the <literal>noop</literal> scheduler for
+    <filename>/dev/sdb</filename>. This feature is available on &slea; 12
+    only.
+   </para>
 <screen>w /sys/block/sda/queue/scheduler - - - - deadline
 w /sys/block/sdb/queue/scheduler - - - - noop</screen>
-    </note>
+   </sect3>
+      <sect3 xml:id="vt.best.io.techniques">
+    <title>I/O Virtualization</title>
+    <para>
+     SUSE products support various I/O Virtualization technologies. The
+     following table lists advantages and disadvantages of each technology. For
+     more information about I/O in virtualization refer to the <link
+     xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/sec_vt_io.html">I/O
+     in Virtualization</link> chapter in the <citetitle>&productname;
+     &productnumber; Virtualization Guide</citetitle>.
+    </para>
+
+    <table>
+     <title>I/O Virtualization Solutions</title>
+     <tgroup cols="3">
+      <colspec colnum="1" colname="1" colwidth="20%"/>
+      <colspec colnum="2" colname="2" colwidth="40%"/>
+      <colspec colnum="1" colname="1" colwidth="40%"/>
+      <thead>
+       <row>
+        <entry>
+         <para>
+          Technology
+         </para>
+        </entry>
+        <entry>
+         <para>
+          Advantage
+         </para>
+       </entry>
+       <entry>
+        <para>
+         Disadvantage
+        </para>
+       </entry>
+       </row>
+      </thead>
+      <tbody>
+       <row>
+        <entry morerows="3">
+         <para>
+          Device Assignment
+          (pass-through)
+         </para>
+        </entry>
+        <entry>
+         <para>
+          Device accessed directly by the guest
+         </para>
+        </entry>
+       <entry>
+        <para>
+         No sharing among multiple guests
+        </para>
+       </entry>
+      </row>
+      <row>
+       <entry>
+        <para>
+         High performance
+        </para>
+       </entry>
+       <entry>
+        <para>
+         Live migration is complex
+        </para>
+       </entry>
+      </row>
+      <row>
+       <entry>
+        <para/>
+       </entry>
+       <entry>
+        <para>
+         PCI device limit is 8 per guest
+        </para>
+       </entry>
+      </row>
+      <row>
+       <entry>
+        <para/>
+       </entry>
+       <entry>
+        <para>
+         Limited number of slots on a server
+        </para>
+       </entry>
+      </row>
+      <row>
+       <entry morerows="1">
+        <para>
+         Full virtualization
+         (IDE, SATA, SCSI, e1000)
+        </para>
+       </entry>
+       <entry>
+        <para>
+         &vmguest; compatibility
+        </para>
+       </entry>
+       <entry>
+        <para>
+         Bad performance
+        </para>
+       </entry>
+      </row>
+      <row>
+       <entry>
+        <para>
+         Easy for live migration
+        </para>
+       </entry>
+       <entry>
+        <para>
+         Emulated operation
+        </para>
+       </entry>
+      </row>
+      <row>
+       <entry morerows="2">
+        <para>
+         Para-virtualization
+         (virtio-blk, virtio-net, virtio-scsi)
+        </para>
+       </entry>
+       <entry>
+        <para>
+         Good performance
+        </para>
+       </entry>
+       <entry>
+        <para>
+         Modified guest (PV drivers)
+        </para>
+       </entry>
+      </row>
+      <row>
+       <entry>
+        <para>
+         Easy for live migration
+        </para>
+       </entry>
+       <entry>
+        <para/>
+       </entry>
+      </row>
+      <row>
+       <entry>
+        <para>
+         Efficient host communication with &vmguest;
+        </para>
+       </entry>
+       <entry>
+        <para/>
+       </entry>
+      </row>
+     </tbody>
+     </tgroup>
+    </table>
    </sect3>
   </sect2>
 
   <sect2 xml:id="vt.best.perf.cpu">
-   <title>Understanding CPU</title>
+   <title>CPUs</title>
    <para>
-    Allocation of resources for &vmguest; is a crucial point in VM
-    administration. Each &vmguest; should be <emphasis>sized</emphasis> to
-    be able to run a certain amount of services, but over-allocating
-    resources for &vmguest; may impact the host and all other &vmguest;s. If
-    all &vmguest;s suddenly requested all their resources, the host would
-    not be able to provide all of them, and this would impact the host's
-    performance and degrade all other services running on the host.
+    Host CPU <quote>components</quote> will be <quote>translated</quote> to
+    virtual CPUs in a &vmguest; when being assigned. These components can
+    either be:
    </para>
-   <para>
-    CPU's Host <emphasis>components</emphasis> will be
-    <emphasis>translated</emphasis> as vCPU in the &vmguest;, but even if
-    you have a multi-core CPU with Hyper-Threading, you should understand
-    that a main CPU unit and a multi-core and Hyper-Threading do not provide
-    the same computation capabilities:
-   </para>
-   <itemizedlist mark="bullet" spacing="normal">
+   <itemizedlist>
     <listitem>
      <para>
       <emphasis>CPU processor</emphasis>: this describes the main CPU unit,
-      it can be multi-core and Hyper-Threaded, and most dedicated servers
-      have multiple CPU processors on their motherboard.
+      which usually has multiple cores and may support Hyper-Threading.
      </para>
     </listitem>
     <listitem>
@@ -1067,118 +1057,110 @@ w /sys/block/sdb/queue/scheduler - - - - noop</screen>
     <listitem>
      <para>
       <emphasis>CPU Hyper-Threading</emphasis>: this implementation is used
-      to improve parallelization of computations, but this is not efficient
+      to improve parallelization of computations, but this is not as efficient
       as a dedicated core.
      </para>
     </listitem>
    </itemizedlist>
-  </sect2>
 
-  <sect2 xml:id="vt.best.perf.cpuparam">
-   <title>CPU Parameter</title>
-   <para>
-    You should avoid CPU over-commit. Unless you know exactly how many vCPU
-    you require for your &vmguest; you should start with 1 vCPU per
-    &vmguest;. Each vCPU should match one hardware processor or core. You
-    should target a workload of 70% inside your VM (this could be checked
-    with a lot of tools like the <command>top</command>). If you allocate
-    more processor than needed in the VM, this will add overhead, and will
-    degrade cycle efficiency, the unused vCPU will consume timer interrupts
-    and will idle loop, then this will impact the &vmguest;, but also the
-    host. To optimize the performance usage it is recommended to know
-    whether your applications are single threaded or not, so as to avoid any
-    over-allocation of vCPU.
-   </para>
-   <sect3>
-    <title>vCPU Model and Features</title>
+   <sect3 xml:id="vt.best.perf.assign">
+    <title>Assigning CPUs</title>
     <para>
-     CPU model and topology can be specified for each &vmguest;. The vCPU
-     definition could be very specific excluding some CPU features, listing
-     exact ones, etc. You can use predefined models available in the
-     <filename>/usr/share/libvirt/cpu_map.xml</filename> file to exactly
-     match your needs. Even if it seems beneficial to state a very specific
-     vCPU for a &vmguest;, you should keep in mind that the normal vCPU
-     model and features simplify migration among heterogeneous hosts (see
-     <link xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/sec_libvirt_admin_migrate.html">libvirt
-     migration guide</link>). This is because changing the vCPU type
-     requires the &vmguest; to be off, which is a constraint in a production
-     environment. You should also keep in mind that multiple sockets with a
-     single core and thread generally give the best performance.
+     You should avoid overcommitting CPUs. Unless you know exactly how many
+     virtual CPUs are required for a &vmguest;, you should start with a sengle
+     virtual CPU per &vmguest;. Each virtual CPU should match one hardware
+     processor or core on the &vmhost;.
     </para>
     <para>
-     To get all capabilities and topology available on your system, use the
-     <command>virsh capabilities</command> command.
+     You should target a CPU workload of approximately 70% inside your VM (see
+     <link xlink:href="https://www.suse.com/documentation/sles-12/book_sle_tuning/data/sec_util_processes.html"/> for information on monitoring
+     tools). If you allocate more processors than needed in the &vmguest;, this
+     will negatively affect the performance of host and guest: cycle efficiency
+     will be degraded, the unused vCPU will consume timer interrupts and will
+     idle loop. In case you primarily run single threaded applications on a
+     &vmguest;, a single virtual CPU is the best choice.
     </para>
-    <note>
-     <title>host-passthrough</title>
-     <para>
-      The CPU visible to the guest should be exactly the same as the host
-      CPU even in the aspects that &libvirt; does not understand. However,
-      the downside of this mode is that the guest environment cannot be
-      reproduced on different hardware. Thus, if you hit any bugs, you are
-      on your own.
-     </para>
-    </note>
+   </sect3>
+   <sect3 xml:id="vt.best.perf.models">
+    <title>Virtual CPU Models and Features</title>
     <para>
-     To specify a particular CPU model for a &vmguest;, such as a Broadwell
-     CPU, use:
+     The CPU model and topology can be specified individually for each
+     &vmguest;. Configuration options range from selecting specific CPU models
+     to excluding certain CPU features. Predefined CPU models are listed in
+     the <filename>/usr/share/libvirt/cpu_map.xml</filename>. Multiple sockets
+     with a single core and a single thread generally provide the best
+     performance. The list of available CPUs and topologies depends on the host
+     system and can be displayed by running <command>virsh
+     capabilities</command>.
     </para>
-<screen>&lt;cpu mode='custom' match='exact'&gt;
+    <para>
+     Note that changing the default virtual CPU configuration will require a
+     &vmguest; shutdown when migrating it to a host with a host with different
+     hardware. More information on &vmguest; migration is available at <link
+     xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/sec_libvirt_admin_migrate.html"/>.
+    </para>
+    <para>
+     To specify a particular CPU model for a &vmguest;, add a respective entry
+     to the &vmguest; configuration file. The following example configures a
+     Broadwell CPU with the invariant TSC feature:
+    </para>
+    <screen>&lt;cpu mode='custom' match='exact'&gt;
   &lt;model&gt;Broadwell&lt;/model&gt;
-&lt;/cpu&gt;</screen>
-    <para>
-     If you want to add the <emphasis>invtsc</emphasis> (Invariant TSC) CPU
-     feature, add a <emphasis>feature</emphasis> element between the
-     <emphasis>&lt;cpu&gt;</emphasis> element:
-    </para>
-<screen>&lt;cpu&gt;
-  ....
   &lt;feature name='invtsc'/&gt;
 &lt;/cpu&gt;</screen>
+    <note>
+     <title>The <literal>host-passthrough</literal> Mode</title>
+     <para>
+      With &lt;cpu mode='host-passthrough'&gt; the virtual CPU will be exactly
+      the same as the host CPU. Using this method makes it impossible to
+      reproduced the &vmguest; on different hardware.
+     </para>
+    </note>
    </sect3>
    <sect3 xml:id="vt.best.perf.vcpupin">
-    <title>vCPU Pinning</title>
+    <title>Virtual CPU Pinning</title>
     <para>
-     vCPU pinning is used to constrain vCPU threads to a set of physical
-     CPUs. The <emphasis>vcpupin</emphasis> element specifies which of the
-     host's physical CPUs the domain vCPU will be pinned to. If this is omitted,
-     and the attribute <emphasis>cpuset</emphasis> of the element
-     <emphasis>vcpu</emphasis> is not specified, the vCPU is pinned to all
-     the physical CPUs by default.
+     Virtual CPU pinning is used to constrain vCPU threads to a set of physical
+     CPUs. The <literal>vcpupin</literal> element specifies to which physical
+     host CPU a virtual CPU will be pinned to. If this element is not set and
+     the attribute <emphasis>cpuset</emphasis> of the element
+     <emphasis>vcpu</emphasis> is not specified, the virtual CPU is pinned to
+     all the physical CPUs by default.
     </para>
     <para>
-     CPU intensive workloads can benefit from vCPU pinning by increasing
-     the physical CPU cache hit ratio. To pin a vCPU to a specific CPU:
+     CPU intensive workloads can benefit from virtual CPU pinning by increasing
+     the physical CPU cache hit ratio. To pin a vCPU to a specific CPU run the
+     following commands:
     </para>
-<screen>virsh# vcpupin <replaceable>DOMAIN_ID</replaceable> --vcpu <replaceable>vCPU_NUMBER</replaceable>
+<screen>&prompt.root;virsh vcpupin <replaceable>DOMAIN_ID</replaceable> --vcpu <replaceable>vCPU_NUMBER</replaceable>
 VCPU: CPU Affinity
 ----------------------------------
 0: 0-7
-virsh # vcpupin SLE12 --vcpu 0 0 --config</screen>
+&prompt.root;virsh vcpupin SLE12 --vcpu 0 0 --config</screen>
     <para>
-     In the XML configuration of your domain you should now have:
+     The last command generates the following entry in the XML configuration:
     </para>
 <screen>&lt;cputune&gt;
    &lt;vcpupin vcpu='0' cpuset='0'/&gt;
 &lt;/cputune&gt;</screen>
     <note>
+     <title>Virtual CPU pinning on NUMA Nodes</title>
      <para>
-      On a NUMA system, vCPU pinning and memory allocation policies can be
-      used to ensure a VM's vCPUs and memory are confined to a NUMA node.
-      See <xref linkend="vt.best.perf.numa"/> for more information related
-      to NUMA tuning.
+      On a NUMA system, virtual CPU pinning and memory allocation policies can
+      be used to ensure a &vmguest;'s CPUs and its memory are confined to a
+      NUMA node. See <xref linkend="vt.best.perf.numa"/> for more information
+      related to NUMA tuning.
      </para>
     </note>
     <warning>
-     <title>Live Migration</title>
+     <title>Virtual CPU pinning and Live Migration</title>
      <para>
-      Even though <emphasis>vcpupin</emphasis> can improve performance, you
-      should take into consideration that live migration of a pinned
-      &vmguest; can be problematic. For example the requested physical
-      resources may not be available on the destination host, or the source
-      and destination hosts may have different NUMA topologies. For more
-      recommendations about Live Migration see
-      <link
+      Even though <literal>vcpupin</literal> can improve performance, you
+      should take into consideration that live migration of a pinned &vmguest;
+      can be problematic. If, for example, the requested physical resources are
+      not be available on the destination host, or the source and destination
+      hosts have different NUMA topologies, the migration will fail. For more
+      recommendations about Live Migration see <link
       xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/sec_libvirt_admin_migrate.html#libvirt_admin_live_migration_requirements">Virtualization
       Live Migration Requirements</link>.
      </para>
@@ -1187,116 +1169,27 @@ virsh # vcpupin SLE12 --vcpu 0 0 --config</screen>
    <sect3>
     <title>libvirt and CPU Configuration</title>
     <para>
-     For more information about vCPU configuration and tuning parameters
-     refer to the
-     <link xlink:href="https://libvirt.org/formatdomain.html#elementsCPU">libvirt</link>
-     documentation.
+     For more information about virtual CPU configuration and tuning parameters
+     refer to the libvirt documentation at <link
+     xlink:href="https://libvirt.org/formatdomain.html#elementsCPU"/>.
     </para>
    </sect3>
   </sect2>
 
-  <sect2>
-   <title>&xen;: Moving from PV to FV</title>
-   <para>
-    This chapter explains how to convert a &xen; para-virtual machine into a
-    &xen; fully virtualized machine.
-   </para>
-   <para>
-    First you need to change to the <emphasis>-default</emphasis> kernel, if
-    not already installed, you must install it while in PV mode.
-   </para>
-   <para>
-    In case you are using <emphasis>vda*</emphasis> disk naming, you need to
-    change this to <emphasis>hd*</emphasis> in
-    <filename>/etc/fstab</filename>,
-    <filename>/boot/grub/menu.lst</filename> and
-    <filename>/boot/grub/device.map</filename>.
-   </para>
-   <note>
-    <title>Prefer UUIDs</title>
-    <para>
-     You should use UUIDs or logical volumes within your
-     <filename>/etc/fstab</filename>. Using UUID simplifies attached network
-     storage, multipathing, and virtualization.
-    </para>
-   </note>
-   <para>
-    Moving from PV to FV will lead to disk driver modules being missing from
-    the initrd. The modules expected are <emphasis>xen-vbd</emphasis> (and
-    <emphasis>xen-vnif</emphasis> for network). These are the PV drivers for
-    a fully virtualized &vmguest;. All other modules like
-    <emphasis>ata_piix</emphasis>, <emphasis>ata_generic</emphasis> and
-    <emphasis>libata</emphasis> should be added automatically.
-   </para>
-   <tip>
-    <title>Adding Modules to the initrd</title>
-    <para>
-     On &slsa; 11, you can add modules to the
-     <emphasis>INITRD_MODULES</emphasis> line in the
-     <filename>/etc/sysconfig/kernel</filename> file, for example:
-    </para>
-<screen>INITRD_MODULES="xen-vbd xen-vnif"</screen>
-    <para>
-     Run <command>mkinitrd</command> to build a new initrd containing the
-     modules.
-    </para>
-    <para>
-     On &slsa; 12, open <filename>/etc/dracut.conf.d/01-dist.conf</filename>
-     and add the modules with <literal>force-drivers</literal> by adding a
-     line as in the example below:
-    </para>
-<screen>force-drivers+="xen-vbd xen-vnif"</screen>
-    <para>
-     Run <command>dracut -f</command> to build a new initrd containing the
-     modules.
-    </para>
-   </tip>
-   <para>
-    You need to change a few parameters in the XML configuration file to
-    describe your &vmguest;:
-   </para>
-   <para>
-    Set the OS section to something like:
-   </para>
-<screen>&lt;os&gt;
-  &lt;type arch='x86_64' machine='xenfv'&gt;hvm&lt;/type&gt;
-  &lt;loader&gt;/usr/lib/xen/boot/hvmloader&lt;/loader&gt;
-  &lt;boot dev='hd'/&gt;
-&lt;/os&gt;</screen>
-   <para>
-    In the devices section, you need to add:
-   </para>
-<screen>&lt;emulator&gt;/usr/lib/xen/bin/qemu-system-i386&lt;/emulator&gt;</screen>
-   <para>
-    Replace the <emphasis>xen</emphasis> disk bus with
-    <emphasis>ide</emphasis>, and the <emphasis>xvda</emphasis> target
-    device with <emphasis>hda</emphasis>.
-   </para>
-   <note>
-    <title>guestfs-tools</title>
-    <para>
-     If you want to script this process, or work on disk images directly,
-     you can use the
-     <link xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/sec_guestfs_tools.html">guestfs-tools</link>
-     suite, as numerous tools exist there to help to modify disk images.
-    </para>
-   </note>
-  </sect2>
-
-  <sect2 xml:id="vt.best.perf.numa">
+    <sect2 xml:id="vt.best.perf.numa">
    <title>NUMA Tuning</title>
    <para>
     NUMA is an acronym for Non Uniform Memory Access. A NUMA system has
-    multiple physical CPUs, each with local memory attached. Each CPU
-    can also access other CPUs' memory, known as a remote memory
-    access, but it is much slower than accessing local memory. NUMA systems
-    can negatively impact &vmguest; performance if not tuned properly.
-    Although ultimately tuning is workload dependent, this section describes
-    controls that should be considered when deploying VM workloads on NUMA
-    hosts. Always consider your host topology when sizing and deploying VMs.
+    multiple physical CPUs, each with local memory attached. Each CPU can also
+    access other CPUs' memory, known as <quote>remote memory access</quote>,
+    but it is much slower than accessing local memory. NUMA systems can
+    negatively impact &vmguest; performance if not tuned properly. Although
+    ultimately tuning is workload dependent, this section describes controls
+    that should be considered when deploying &vmguest;s on NUMA hosts. Always
+    consider your host topology when configuring and deploying VMs.
    </para>
    <para>
-    SUSE Lunix Enterprise Server contains a NUMA auto-balancer that strives
+    &productname; contains a NUMA auto-balancer that strives
     to reduce remote memory access by placing memory on the same NUMA node
     as the CPU processing it. In addition, standard tools such as
     <command>cgset</command> and virtualization tools such as libvirt
@@ -1305,7 +1198,7 @@ virsh # vcpupin SLE12 --vcpu 0 0 --config</screen>
    <para>
     <command>numactl</command> is used to check for host NUMA capabilities:
    </para>
-<screen># numactl --hardware
+<screen>&prompt.root;numactl --hardware
 available: 4 nodes (0-3)
 node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 72 73 74 75 76 77 78
 79 80 81 82 83 84 85 86 87 88 89
@@ -1335,27 +1228,27 @@ node   0   1   2   3
     <command>virsh capabilities</command> can also be used to examine the
     systems NUMA capabilities and CPU topoloy.
    </para>
-   <sect3>
+   <sect3 xml:id="vt.best.perf.numa.balancing">
     <title>NUMA Balancing</title>
     <para>
      On NUMA machines, there is a performance penalty if remote memory is
-     accessed by a CPU. Automatic NUMA balancing scans a task's address
-     space and unmaps pages to detect whether pages are properly placed or
-     whether the data should be migrated to a memory node local to where the
-     task is running. Every scan delay
-     (<emphasis>numa_balancing_scan_delay_ms</emphasis>), the task scans the
-     next scan size (<emphasis>numa_balancing_scan_size_mb</emphasis>)
-     number of pages in its address space. When the end of the address space
-     is reached the scanner restarts from the beginning.
+     accessed by a CPU. Automatic NUMA balancing scans a task's address space
+     and unmaps pages to detect whether pages are properly placed or whether
+     the data should be migrated to a memory node local to where the task is
+     running. In defined intervals (configured with
+     <literal>numa_balancing_scan_delay_ms</literal>), the task scans the next
+     scan size number of pages (configured with
+     <literal>numa_balancing_scan_size_mb</literal>) in its address
+     space. When the end of the address space is reached the scanner restarts
+     from the beginning.
     </para>
     <para>
-     Higher scan rates incur higher system overhead as page faults must be
-     trapped and potentially data may need to be migrated. However, the
-     higher the scan rate, the more quickly a task's memory is migrated to a
-     local node if the workload pattern changes, thereby minimizing
-     performance impact due to remote memory accesses. These
-     <command>sysctls</command> control the thresholds for scan delays and
-     the number of pages scanned.
+     Higher scan rates cause higher system overhead as page faults must be
+     trapped and data needs to be migrated. However, the higher the scan rate,
+     the more quickly a task's memory is migrated to a local node when the
+     workload pattern changes. This minimizes the performance impact due to
+     remote memory accesses. These <command>sysctl</command> directives control
+     the thresholds for scan delays and the number of pages scanned:
     </para>
 <screen># sysctl -a | grep numa_balancing
 kernel.numa_balancing = 1<co xml:id="co.numa.balancing"/>
@@ -1386,36 +1279,40 @@ kernel.numa_balancing_scan_size_mb = 256<co xml:id="co.numa.size"/></screen>
      </callout>
      <callout arearefs="co.numa.size">
       <para>
-       How many megabytes worth of pages are scanned for a given scan
+       Size in megabytes worth of pages to be scanned for a given scan
       </para>
      </callout>
     </calloutlist>
     <para>
-     The main goal of automatic NUMA balancing is to reschedule tasks on the
-     same node's memory, so the CPU follows the memory, or to copy the
+     For more information see <link
+     xlink:href="https://www.suse.com/documentation/sles-12/book_sle_tuning/data/cha_tuning_numactl.html"/>.
+    </para>
+    <para>
+     The main goal of automatic NUMA balancing is either to reschedule tasks on
+     the same node's memory, so the CPU follows the memory, or to copy the
      memory's pages to the same node, so the memory follows the CPU.
     </para>
     <warning>
      <title>Task Placement</title>
      <para>
       There are no rules to define the best place to run a task, because
-      tasks could share memory with another task, so you should group such
-      tasks on the same node to obtain the best performance. Check NUMA
+      tasks could share memory with other tasks. For best performance, it is
+      recommended to group tasks sharing memory on the same node. Check NUMA
       statistics with <command># cat /proc/vmstat | grep numa_</command>.
      </para>
     </warning>
    </sect3>
-   <sect3>
-    <title>Memory Allocation control with cpuset Controller</title>
+   <sect3 xml:id="vt.best.perf.numa.cpuset">
+    <title>Memory Allocation control with the CPUset Controller</title>
     <para>
      The cgroups cpuset controller can be used confine memory used by a
      process to a NUMA node. There are three cpuset memory policy modes
-     available: interleave, bind, and preferred.
+     available:
     </para>
     <itemizedlist>
      <listitem>
       <para>
-       <emphasis>interleave</emphasis>: This is a memory placement policy
+       <literal>interleave</literal>: This is a memory placement policy
        which is also known as round-robin. This policy can provide
        substantial improvements for jobs that need to place thread local
        data on the corresponding node. When the interleave destination is
@@ -1424,13 +1321,13 @@ kernel.numa_balancing_scan_size_mb = 256<co xml:id="co.numa.size"/></screen>
      </listitem>
      <listitem>
       <para>
-       <emphasis>bind</emphasis>: This will place memory only on one node,
+       <literal>bind</literal>: This will place memory only on one node,
        which means in case of insufficient memory, the allocation will fail.
       </para>
      </listitem>
      <listitem>
       <para>
-       <emphasis>preferred</emphasis>: This policy will apply a preference
+       <literal>preferred</literal>: This policy will apply a preference
        to allocate memory to a node, but if there is not enough space for
        memory on this node, it will fall back to another node.
       </para>
@@ -1438,7 +1335,7 @@ kernel.numa_balancing_scan_size_mb = 256<co xml:id="co.numa.size"/></screen>
     </itemizedlist>
     <para>
      You can change the memory policy mode with the <command>cgset</command>
-     tool from the libcgroup-tools package:
+     tool from the <package>libcgroup-tools</package> package:
     </para>
 <screen># cgset -r cpuset.mems=<replaceable>NODE</replaceable> sysdefault/libvirt/qemu/<replaceable>KVM_NAME</replaceable>/emulator</screen>
     <para>
@@ -1463,10 +1360,10 @@ kernel.numa_balancing_scan_size_mb = 256<co xml:id="co.numa.size"/></screen>
      </para>
     </note>
    </sect3>
-   <sect3>
+   <sect3 xml:id="vt.best.perf.numa.balancing">
     <title>Memory Allocation Control with &libvirt;</title>
     <para>
-     &libvirt; allows controlling &vmguest; memory allocation policy using the
+     &libvirt; allows controlling the &vmguest; memory allocation policy using
      the <emphasis>numatune</emphasis> element:
     </para>
 <screen>&lt;numatune&gt;
@@ -1479,31 +1376,31 @@ kernel.numa_balancing_scan_size_mb = 256<co xml:id="co.numa.size"/></screen>
       <para>
        Policies available are: <emphasis>interleave</emphasis> (round-robin
        like), <emphasis>strict</emphasis> (default) or
-       <emphasis>preferred</emphasis>
+       <emphasis>preferred</emphasis>.
       </para>
      </callout>
      <callout arearefs="co.numat.nodeset">
       <para>
-       Specify the NUMA nodes
+       Specify the NUMA nodes.
       </para>
      </callout>
      <callout arearefs="co.numat.memnode">
       <para>
        Specify memory allocation policies for each guest NUMA node (if this
        element is not defined then this will fall back and use the
-       <emphasis>memory</emphasis> element)
+       <emphasis>memory</emphasis> element).
       </para>
      </callout>
      <callout arearefs="co.numat.cellid">
       <para>
-       Addresses the guest NUMA node for which the settings are applied
+       Addresses the guest NUMA node for which the settings are applied.
       </para>
      </callout>
      <callout arearefs="co.numat.placement">
       <para>
        The placement attribute can be used to indicate the memory placement
        mode for a domain process, the value can be <emphasis>auto</emphasis> or
-       <emphasis>strict</emphasis>
+       <emphasis>strict</emphasis>.
       </para>
      </callout>
     </calloutlist>
@@ -1511,9 +1408,13 @@ kernel.numa_balancing_scan_size_mb = 256<co xml:id="co.numa.size"/></screen>
      <title>Memory and CPU across NUMA nodes</title>
      <para>
       You should avoid allocating &vmguest; memory across NUMA nodes, and
-      prevent vCPUs from floating across NUMA nodes.
+      prevent virtual CPUs from floating across NUMA nodes.
      </para>
     </warning>
+
+<!-- ... -->
+
+
     <sect4>
      <title>Non-vNUMA &vmguest;</title>
      <para>
@@ -1877,6 +1778,94 @@ calls      retrans    authrefrsh
    </sect3>
   </sect2>
  </sect1>
+
+ <sect1 xml:id="vt.best.Xen_pv_fv">
+  <title>&xen;: Moving from PV to FV</title>
+  <para>
+   This chapter explains how to convert a &xen; para-virtual machine into a
+   &xen; fully virtualized machine.
+  </para>
+  <para>
+   First you need to change to the <emphasis>-default</emphasis> kernel, if not
+   already installed, you must install it while in PV mode.
+  </para>
+  <para>
+   In case you are using <emphasis>vda*</emphasis> disk naming, you need to
+   change this to <emphasis>hd*</emphasis> in <filename>/etc/fstab</filename>,
+   <filename>/boot/grub/menu.lst</filename> and
+   <filename>/boot/grub/device.map</filename>.
+  </para>
+  <note>
+   <title>Prefer UUIDs</title>
+   <para>
+    You should use UUIDs or logical volumes within your
+    <filename>/etc/fstab</filename>. Using UUID simplifies attached network
+    storage, multipathing, and virtualization.
+   </para>
+  </note>
+  <para>
+   Moving from PV to FV will lead to disk driver modules being missing from the
+   initrd. The modules expected are <emphasis>xen-vbd</emphasis> (and
+   <emphasis>xen-vnif</emphasis> for network). These are the PV drivers for a
+   fully virtualized &vmguest;. All other modules like
+   <emphasis>ata_piix</emphasis>, <emphasis>ata_generic</emphasis> and
+   <emphasis>libata</emphasis> should be added automatically.
+  </para>
+  <tip>
+   <title>Adding Modules to the initrd</title>
+   <para>
+    On &slsa; 11, you can add modules to the
+    <emphasis>INITRD_MODULES</emphasis> line in the
+    <filename>/etc/sysconfig/kernel</filename> file, for example:
+   </para>
+   <screen>INITRD_MODULES="xen-vbd xen-vnif"</screen>
+   <para>
+    Run <command>mkinitrd</command> to build a new initrd containing the
+    modules.
+   </para>
+   <para>
+    On &slsa; 12, open <filename>/etc/dracut.conf.d/01-dist.conf</filename>
+    and add the modules with <literal>force-drivers</literal> by adding a
+    line as in the example below:
+   </para>
+   <screen>force-drivers+="xen-vbd xen-vnif"</screen>
+   <para>
+    Run <command>dracut -f</command> to build a new initrd containing the
+    modules.
+   </para>
+  </tip>
+  <para>
+   You need to change a few parameters in the XML configuration file to
+   describe your &vmguest;:
+  </para>
+  <para>
+   Set the OS section to something like:
+  </para>
+  <screen>&lt;os&gt;
+  &lt;type arch='x86_64' machine='xenfv'&gt;hvm&lt;/type&gt;
+  &lt;loader&gt;/usr/lib/xen/boot/hvmloader&lt;/loader&gt;
+  &lt;boot dev='hd'/&gt;
+&lt;/os&gt;</screen>
+  <para>
+    In the devices section, you need to add:
+  </para>
+  <screen>&lt;emulator&gt;/usr/lib/xen/bin/qemu-system-i386&lt;/emulator&gt;</screen>
+  <para>
+   Replace the <emphasis>xen</emphasis> disk bus with <emphasis>ide</emphasis>,
+   and the <emphasis>xvda</emphasis> target device with
+   <emphasis>hda</emphasis>.
+  </para>
+  <note>
+   <title>guestfs-tools</title>
+   <para>
+    If you want to script this process, or work on disk images directly, you
+    can use the <link
+    xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/sec_guestfs_tools.html">guestfs-tools</link>
+    suite, as numerous tools exist there to help to modify disk images.
+   </para>
+  </note>
+ </sect1>
+
  <sect1 xml:id="vt.best.stor">
   <title>&vmguest; Images</title>
 
