@@ -2196,274 +2196,236 @@ lazy refcounts: true</screen>
    -->
 
 <sect2 xml:id="vt.best.img.open_img">
- <title>Open a &vmguest; Image</title>
+ <title>Opening a &vmguest; Image</title>
  <para>
-  Tto access the file system of an image, use the
-  <package>guestfs-tools</package>. If you do not have this tool installed you
-  can mount an image with other Linux tools, but you should avoid accessing an
-  untrusted or unknown &vmguest;'s image system because this can lead to
-  security issues (read <link
+  To access the file system of an image, use the
+  <package>guestfs-tools</package>. If you do not have this tool installed on
+  your system you can mount an image with other Linux tools, but you should
+  avoid accessing an untrusted or unknown &vmguest;'s image system because this
+  can lead to security issues (read <link
   xlink:href="https://www.berrange.com/posts/2013/02/20/a-reminder-why-you-should-never-mount-guest-disk-images-on-the-host-os/">D.
   Berrangé's post</link> for more information).
  </para>
-<!-- .. -->
-
-
-   <sect3>
-    <title>Raw Image</title>
-    <sect4>
-     <title>Mounting a Raw Image</title>
-     <procedure>
-      <step>
-       <para>
-        To be able to mount the image, first you need to find a free loop
-        device:
-       </para>
-<screen># losetup -f<co xml:id="co.losetup.find"/>
+ <sect3 xml:id="vt.best.img.open_img.raw">
+  <title>Opening a Raw Image</title>
+  <procedure>
+   <title>Mounting a Raw Image</title>
+   <step>
+    <para>
+     To be able to mount the image, find a free loop device. The following
+     command display the first unused loop device,
+     <filename>/dev/loop1</filename> in this example.
+    </para>
+<screen>&prompt.root;losetup -f
 /dev/loop1</screen>
-       <calloutlist>
-        <callout arearefs="co.losetup.find">
-         <para>
-          Find first unused device
-         </para>
-        </callout>
-       </calloutlist>
-      </step>
-      <step>
-       <para>
-        Associate the image with the loop device:
-       </para>
-<screen># losetup /dev/loop1 SLE12.raw</screen>
-      </step>
-      <step>
-       <para>
-        Check everything is fine:
-       </para>
-<screen># losetup -l<co xml:id="co.losetup.list"/>
+   </step>
+   <step>
+    <para>
+     Associate an image (<filename>SLE12.raw</filename> in this example) with
+     the loop device:
+    </para>
+    <screen>losetup /dev/loop1 SLE12.raw</screen>
+   </step>
+   <step>
+    <para>
+     Check whether the images has successfully been associated with the loop
+     device by getting detailed information about the loop device:
+    </para>
+<screen># losetup -l
 NAME       SIZELIMIT OFFSET AUTOCLEAR RO BACK-FILE
 /dev/loop1         0      0         0  0    /var/lib/libvirt/images/SLE12.raw</screen>
-       <calloutlist>
-        <callout arearefs="co.losetup.list">
-         <para>
-          List information about all loop devices
-         </para>
-        </callout>
-       </calloutlist>
-      </step>
-      <step>
-       <para>
-        Check the image's partitions with <command>kpartx</command>:
-       </para>
-<screen># kpartx -a<co xml:id="co.kpartx.a"/> -v<co xml:id="co.kpartx.v"/> /dev/loop1
+   </step>
+   <step>
+    <para>
+     Check the image's partitions with <command>kpartx</command>:
+    </para>
+    <screen>&prompt.root;kpartx -a<co xml:id="co.kpartx.a"/> -v<co xml:id="co.kpartx.v"/> /dev/loop1
 add map loop1p1 (254:1): 0 29358080 linear /dev/loop1 2048</screen>
-       <calloutlist>
-        <callout arearefs="co.kpartx.a">
-         <para>
-          Add partition devmappings
-         </para>
-        </callout>
-        <callout arearefs="co.kpartx.v">
-         <para>
-          Verbose mode
-         </para>
-        </callout>
-       </calloutlist>
-      </step>
-      <step>
-       <para>
-        You can now mount the image partition(s):
-       </para>
-<screen># mkdir /mnt/sle12mount
-# mount /dev/mapper/loop1p1 /mnt/sle12mount</screen>
-      </step>
-     </procedure>
-     <note>
-      <title>Raw image with LVM</title>
+    <calloutlist>
+     <callout arearefs="co.kpartx.a">
       <para>
-       If your raw image contains an LVM volume group you should use LVM
-       tools to mount the partition. Refer to
-       <xref linkend="sect4.lvm.found"/>
+       Add partition device mappings.
       </para>
-     </note>
-    </sect4>
-    <sect4>
-     <title>Unmount a Raw Image</title>
-     <procedure>
-      <step>
-       <para>
-        Unmount all mounted partitions
-       </para>
-<screen># umount /mnt/sle12mount</screen>
-      </step>
-      <step xml:id="step.umount.raw">
-       <para>
-        Delete partition devmappings with the <command>kpartx</command> and
-        <option>-d</option> options
-       </para>
-<screen># kpartx -d /dev/loop1</screen>
-      </step>
-      <step>
-       <para>
-        Detach the devices with <command>losetup</command>
-       </para>
-<screen># losetup -d /dev/loop1</screen>
-      </step>
-     </procedure>
-    </sect4>
-   </sect3>
-   <sect3>
-    <title>Qcow2 Image</title>
-    <sect4>
-     <title>Mount a Qcow2 Image</title>
-     <para>
-      This procedure describes the step-by-step process you should follow to
-      mount a qcow2 image.
-     </para>
-     <procedure>
-      <step>
-       <para>
-        First you need to probe the <emphasis>nbd</emphasis> (network block
-        devices) modules.
-       </para>
-<screen># modprobe nbd max_part=16<co xml:id="co.nbd.maxpart"/>
-# dmesg | grep nbd
+     </callout>
+     <callout arearefs="co.kpartx.v">
+      <para>
+       Verbose mode.
+      </para>
+     </callout>
+    </calloutlist>
+   </step>
+   <step>
+    <para>
+     Now mount the image partition(s) (to <filename>/mnt/sle12mount</filename>
+     in the following example):
+    </para>
+    <screen>mkdir /mnt/sle12mount
+mount /dev/mapper/loop1p1 /mnt/sle12mount</screen>
+   </step>
+  </procedure>
+  <note>
+   <title>Raw image with LVM</title>
+   <para>
+    If your raw image contains an LVM volume group you should use LVM
+    tools to mount the partition. Refer to
+    <xref linkend="sect4.lvm.found"/>
+   </para>
+  </note>
+
+  <procedure>
+   <title>Unmounting a Raw Image</title>
+   <step>
+    <para>
+     Unmount all mounted partitions of the image, for example:
+    </para>
+    <screen>umount /mnt/sle12mount</screen>
+   </step>
+   <step xml:id="step.umount.raw">
+    <para>
+     Delete partition device mappings with <command>kpartx</command>:
+    </para>
+    <screen># kpartx -d /dev/loop1</screen>
+   </step>
+   <step>
+    <para>
+     Detach the devices with <command>losetup</command>
+    </para>
+    <screen># losetup -d /dev/loop1</screen>
+   </step>
+  </procedure>
+ </sect3>
+
+ <sect3>
+  <title>Opening a qcow2 Image</title>
+  <procedure>
+   <title>Mounting a qcow2 Image</title>
+   <step>
+    <para>
+     First you need to load the <emphasis>nbd</emphasis> (network block
+     devices) module. The following example loads it with support for 16 block
+     devices (<option>max_part=16</option>). Check with
+     <command>dmesg</command> whether the opreation was successful:
+    </para>
+<screen>&prompt.root;modprobe nbd max_part=16
+&prompt.root;dmesg | grep nbd
 [89155.142425] nbd: registered device at major 43</screen>
-       <calloutlist>
-        <callout arearefs="co.nbd.maxpart">
-         <para>
-          Number of partitions per device
-         </para>
-        </callout>
-       </calloutlist>
-      </step>
-      <step>
-       <para>
-        Check that <filename>/dev/nbd0</filename> is not used, and connect
-        the &vmguest; image (i.e. SLE12.qcow2) to the NBD device witht the
-        <command>qemu-nbd</command> command:
-       </para>
-<screen># qemu-nbd -c<co xml:id="co.qemunbd.minusc"/> /dev/nbd0<co xml:id="co.qemunbd.device"/> SLE12.qcow2<co xml:id="co.qemunbd.image"/></screen>
-       <calloutlist>
-        <callout arearefs="co.qemunbd.minusc">
-         <para>
-          Connect <filename>SLE12.qcow2</filename> to the local NBD device
-          <filename>/dev/nbd0</filename>
-         </para>
-        </callout>
-        <callout arearefs="co.qemunbd.device">
-         <para>
-          NBD device to use
-         </para>
-        </callout>
-        <callout arearefs="co.qemunbd.image">
-         <para>
-          &vmguest; image to use
-         </para>
-        </callout>
-       </calloutlist>
-      </step>
-      <step>
-       <para>
-        Inform the operating system about partition table changes with
-        <command>partprobe</command>
-       </para>
-<screen># partprobe /dev/nbd0 -s<co xml:id="co.partprobe.sum"/>
-/dev/nbd0: msdos partitions 1 2
-# dmesg | grep nbd0 | tail -1
-[89699.082206]  nbd0: p1 p2</screen>
-       <calloutlist>
-        <callout arearefs="co.partprobe.sum">
-         <para>
-          Print a summary of contents
-         </para>
-        </callout>
-       </calloutlist>
-      </step>
-      <step>
-       <para>
-        Two partitions are available in the SLE12.qcow2 image:
-        <filename>/dev/nbd0p1</filename> and
-        <filename>/dev/nbd0p2</filename>. Before mounting this partition you
-        need to check that there is no LVM volume with
-        <command>vgscan</command>.
-       </para>
-<screen># vgscan
-No volume groups found</screen>
-      </step>
-      <step>
-       <para>
-        No LVM volume has been found, so you can mount the partition with
-        <command>mount</command>. Refer to <xref linkend="sect4.lvm.found"/>
-        to see how to handle LVM volumes.
-       </para>
-<screen># mkdir /mnt/nbd0p2
-# mount /dev/nbd0p1 /mnt/nbd0p2</screen>
-       <para>
-        You can now access your &vmguest; file system.
-       </para>
-      </step>
-     </procedure>
-    </sect4>
-    <sect4>
-     <title>Unmount a Qcow2 Image</title>
-     <procedure>
-      <title>Cleanup</title>
-      <step>
-       <para>
-        To clean up everything, use <command>umount</command> to unmount the
-        partition:
-       </para>
-<screen># umount /mnt/nbd0p2</screen>
-      </step>
-      <step xml:id="step.umount.qcow2">
-       <para>
-        Disconnect the image from the <filename>/dev/nbd0</filename> device
-       </para>
-<screen># qemu-nbd -d<co xml:id="co.qemunbd.minusd"/> /dev/nbd0</screen>
-       <calloutlist>
-        <callout arearefs="co.qemunbd.minusd">
-         <para>
-          Disconnect the specified device
-         </para>
-        </callout>
-       </calloutlist>
-      </step>
-     </procedure>
-     <note>
-      <title>Free NBD devices</title>
+   </step>
+   <step>
+    <para>
+     Connect the &vmguest; image (for example <filename>SLE12.qcow2</filename>)
+     to an NBD device (<filename>/debv/nbd0</filename> in the following
+     example) with the <command>qemu-nbd</command> command. Make sure to use a
+     free NBD device:
+    </para>
+    <screen># qemu-nbd -c<co xml:id="co.qemunbd.minusc"/> /dev/nbd0<co xml:id="co.qemunbd.device"/> SLE12.qcow2<co xml:id="co.qemunbd.image"/></screen>
+    <calloutlist>
+     <callout arearefs="co.qemunbd.minusc">
       <para>
-       It is pretty easy to detect whether an NBD device is free. Run the
-       following command:
+       Connect <filename>SLE12.qcow2</filename> to the local NBD device
+       <filename>/dev/nbd0</filename>
       </para>
-<screen># lsof /dev/nbd0
+     </callout>
+     <callout arearefs="co.qemunbd.device">
+      <para>
+       NBD device to use
+      </para>
+     </callout>
+     <callout arearefs="co.qemunbd.image">
+      <para>
+       &vmguest; image to use
+      </para>
+     </callout>
+    </calloutlist>
+    <tip>
+      <title>Checking for a free NBD devices</title>
+      <para>
+       To check whether an NBD device is free run the following command:
+      </para>
+<screen>&prompt.root;lsof /dev/nbd0
 COMMAND    PID USER   FD   TYPE DEVICE SIZE/OFF  NODE NAME
 qemu-nbd 15149 root   10u   BLK   43,0      0t0 47347 /dev/nbd0</screen>
       <para>
-       If it produces a line, the NBD device is busy. This can also be
-       confirmed by the presence of the
+       If the command produces an output like in the example above, the device
+       is busy (not free). This can also be confirmed by the presence of the
        <filename>/sys/devices/virtual/block/nbd0/pid</filename> file.
       </para>
-     </note>
-    </sect4>
-   </sect3>
-   <sect3 xml:id="sect4.lvm.found">
-    <title>Image with LVM</title>
+     </tip>
+   </step>
+   <step>
     <para>
-     In case an LVM volume group has been found, <command>vgscan</command>
-     will return nothing, until you have passed the <option>-v</option>
-     (verbose) parameter.
+     Inform the operating system about partition table changes with
+     <command>partprobe</command>:
     </para>
-<screen># vgscan -v
-connect() failed on local socket: No such file or directory
-Internal cluster locking initialisation failed.
-WARNING: Falling back to local file-based locking.
-Volume Groups with the clustered attribute will be inaccessible.
+    <screen>&prompt.root;partprobe /dev/nbd0 -s
+/dev/nbd0: msdos partitions 1 2
+&prompt.root;dmesg | grep nbd0 | tail -1
+[89699.082206]  nbd0: p1 p2</screen>
+   </step>
+   <step>
+    <para>
+     In the example above, the <filename>SLE12.qcow2</filename> contains two
+     partitions: <filename>/dev/nbd0p1</filename> and
+     <filename>/dev/nbd0p2</filename>. Before mounting these partitions, use
+     <command>vgscan</command> to check whther they belong to an LVM volume:
+    </para>
+    <screen># vgscan -v
+    Wiping cache of LVM-capable devices
+    Wiping internal VG cache
+    Reading all physical volumes. This may take a while...
+    Using volume group(s) on command line.
+    No volume groups found.</screen>
+   </step>
+   <step>
+    <para>
+     If no LVM volume has been found, you can mount the partition with
+     <command>mount</command>:
+    </para>
+    <screen># mkdir /mnt/nbd0p2
+# mount /dev/nbd0p1 /mnt/nbd0p2</screen>
+    <para>
+     Refer to <xref linkend="sect4.lvm.found"/> for information on how to
+     handle LVM volumes.
+    </para>
+   </step>
+  </procedure>
+
+  <procedure>
+   <title>Unmounting a qcow2 Image</title>
+   <step>
+    <para>
+     Unmount all mounted partitions of the image, for example:
+    </para>
+    <screen>umount /mnt/nbd0p2</screen>
+   </step>
+   <step xml:id="step.umount.qcow2">
+    <para>
+     Disconnect the image from the <filename>/dev/nbd0</filename> device
+    </para>
+    <screen>qemu-nbd -d /dev/nbd0</screen>
+   </step>
+  </procedure>
+ </sect3>
+
+ <sect3 xml:id="sect4.lvm.found">
+  <title>Opening Images Containing LVM</title>
+
+  <procedure>
+   <title>Mounting Images Containing LVM</title>
+   <step>
+    <para>
+     To check images for LVM groups use <command>vgscan -v</command>. If an
+     image contains LVM groups, the output of the command looks like the
+     following:
+    </para>
+    <screen>&prompt.root;vgscan -v
 Wiping cache of LVM-capable devices
 Wiping internal VG cache
 Reading all physical volumes.  This may take a while...
 Finding all volume groups
 Finding volume group "system"
 Found volume group "system" using metadata type lvm2</screen>
+   </step>
+   <step>
     <para>
      The <emphasis>system</emphasis> LVM volume group has been found on the
      system. You can get more information about this volume with
@@ -2472,12 +2434,8 @@ Found volume group "system" using metadata type lvm2</screen>
      <emphasis>system</emphasis>). You should activate this volume group to
      expose LVM partitions as devices so the system can mount them. Use
      <command>vgchange</command>:
-    </para>
-<screen># vgchange -ay<co xml:id="co.lvm.a"/> -v<co xml:id="co.lvm.v"/>
-connect() failed on local socket: No such file or directory
-Internal cluster locking initialisation failed.
-WARNING: Falling back to local file-based locking.
-Volume Groups with the clustered attribute will be inaccessible.
+  </para>
+<screen># vgchange -ay -v
 Finding all volume groups
 Finding volume group "system"
 Found volume group "system"
@@ -2500,52 +2458,38 @@ Loading system-swap table (254:2)
 Resuming system-swap (254:2)
 Activated 3 logical volumes in volume group system
     3 logical volume(s) in volume group "system" now active</screen>
-    <calloutlist>
-     <callout arearefs="co.lvm.a">
-      <para>
-       Activate the volume group
-      </para>
-     </callout>
-     <callout arearefs="co.lvm.v">
-      <para>
-       Verbose mode, without this parameter the output is quiet
-      </para>
-     </callout>
-    </calloutlist>
+   </step>
+   <step>
     <para>
      All partitions in the volume group will be listed in the
      <filename>/dev/mapper</filename> directory. You can simply mount them
      now.
     </para>
-<screen># ls /dev/mapper/system-*
+<screen>&prompt.root;ls /dev/mapper/system-*
 /dev/mapper/system-home  /dev/mapper/system-root /dev/mapper/system-swap
 
-# mkdir /mnt/system-root
-# mount  /dev/mapper/system-root /mnt/system-root
+&prompt.root;mkdir /mnt/system-root
+&prompt.root;mount  /dev/mapper/system-root /mnt/system-root
 
-# ls /mnt/system-root/
+&prompt.root;ls /mnt/system-root/
 bin   dev  home  lib64       mnt  proc        root  sbin     srv  tmp  var
 boot  etc  lib   lost+found  opt  read-write  run   selinux  sys  usr</screen>
+   </step>
+  </procedure>
+  <procedure>
+   <title>Unmounting Images Containing LVM</title>
+   <step>
     <para>
-     To clean up:
+     Unmount all partitions (with <command>umount</command>)
     </para>
-    <procedure>
-     <step>
-      <para>
-       Unmount all partitions (with <command>umount</command>)
-      </para>
-<screen># umount /mnt/system-root</screen>
-     </step>
-     <step>
-      <para>
-       Deactivate the LVM volume group (with <command>vgchange -an
-       <replaceable>VOLUMEGROUPNAME</replaceable></command>)
+    <screen># umount /mnt/system-root</screen>
+   </step>
+   <step>
+    <para>
+     Deactivate the LVM volume group (with <command>vgchange -an
+     <replaceable>VOLUMEGROUPNAME</replaceable></command>)
       </para>
 <screen># vgchange -an -v system
-connect() failed on local socket: No such file or directory
-Internal cluster locking initialisation failed.
-WARNING: Falling back to local file-based locking.
-Volume Groups with the clustered attribute will be inaccessible.
 Using volume group(s) on command line
 Finding volume group "system"
 Found volume group "system"
@@ -2556,64 +2500,61 @@ Found volume group "system"
 Removing system-swap (254:2)
 Deactivated 3 logical volumes in volume group system
 0 logical volume(s) in volume group "system" now active</screen>
-     </step>
-     <step>
+   </step>
+   <step>
+    <para>
+     Now you you have two choices:
+    </para>
+    <itemizedlist>
+     <listitem>
       <para>
-       Now you you have two choices:
+       If case of a qcow2 image, proceed as described in
+       <xref linkend="step.umount.qcow2"/> (<command>qemu-nbd -d
+       /dev/nbd0</command>).
       </para>
-      <itemizedlist>
-       <listitem>
-        <para>
-         In case of Qcow2 format, end the procedure from
-         <xref linkend="step.umount.qcow2"/> (<command>qemu-nbd -d
-         /dev/nbd0</command>)
-        </para>
-       </listitem>
-       <listitem>
-        <para>
-         In case of Raw format, end the procedure from
-         <xref linkend="step.umount.raw"/> (<command>kpartx -d
-         /dev/loop1</command>; <command>losetup -d /dev/loop1</command>)
-        </para>
-       </listitem>
-      </itemizedlist>
-     </step>
-    </procedure>
-    <warning>
-     <title>Check cleanup is OK</title>
+     </listitem>
+     <listitem>
+      <para>
+       In case of a raw image, proceeds as described in
+       <xref linkend="step.umount.raw"/> (<command>kpartx -d
+       /dev/loop1</command>; <command>losetup -d /dev/loop1</command>).
+      </para>
+     </listitem>
+    </itemizedlist>
+    <important>
+     <title>Check for a Successful Unmount</title>
      <para>
-      You should double-check that your cleanup procedure is ok by using a
-      system command like <command>losetup</command>,
-      <command>qemu-nbd</command>, <command>mount</command> or
-      <command>vgscan</command>. If this is not the case you may have
-      trouble using the &vmguest; because the system image will be used in
-      different places.
+      You should double-check that umounting succeeded by using a system
+      command like <command>losetup</command>, <command>qemu-nbd</command>,
+      <command>mount</command> or <command>vgscan</command>. If this is not the
+      case you may have trouble using the &vmguest; because its system image is
+      used in different places.
      </para>
-    </warning>
-   </sect3>
-  </sect2>
+    </important>
+   </step>
+  </procedure>
+ </sect3>
+</sect2>
 
-  <sect2>
-   <title>File System Sharing</title>
-   <para>
-    You can access a host directory in the &vmguest; using the
-    <emphasis>file system</emphasis> element. In the following example we
-    will share the <filename>/data/shared</filename> directory and mount it
-    under the &vmguest;. Note that the <emphasis>accessmode</emphasis>
-    parameter only works with <emphasis>type='mount'</emphasis> for the
-    QEMU/KVM drive.
-    <remark>dublin 2015-11-04: Is it ok to say this?:
-       Most other instances of type are for the...</remark>
-    All other <emphasis>type</emphasis> are mostly available for LXC driver.
-   </para>
-<screen>&lt;filesystem type='mount'<co xml:id="co.fs.mount"/> accessmode='mapped'<co xml:id="co.fs.mode"/>&gt;
+<sect2 xml:id="vt.best.img.share">
+ <title>File System Sharing</title>
+ <para>
+  You can access a host directory in the &vmguest; using the
+  <tag class="element">filesystem</tag> element. In the following example we
+  will share the <filename>/data/shared</filename> directory and mount it
+  in the &vmguest;. Note that the <tag class="attribute">accessmode</tag>
+  parameter only works with <tag class="attribute">type='mount'</tag> for the
+  QEMU/KVM drive (most other values for <tag class="attribute">type</tag> are
+  exclusively used for the LXC driver).
+ </para>
+ <screen>&lt;filesystem type='mount'<co xml:id="co.fs.mount"/> accessmode='mapped'<co xml:id="co.fs.mode"/>&gt;
    &lt;source dir='/data/shared'<co xml:id="co.fs.sourcedir"/>&gt;
    &lt;target dir='shared'<co xml:id="co.fs.targetdir"/>/&gt;
 &lt;/filesystem&gt;</screen>
    <calloutlist>
     <callout arearefs="co.fs.mount">
      <para>
-      A host directory to mount &vmguest;
+      A host directory to mount &vmguest;.
      </para>
     </callout>
     <callout arearefs="co.fs.mode">
@@ -2621,29 +2562,30 @@ Deactivated 3 logical volumes in volume group system
       Access mode (the security mode) set to <emphasis>mapped</emphasis>
       will give access with the permissions of the hypervisor. Use
       <emphasis>passthrough</emphasis> to access this share with the
-      permissions of the user inside the &vmguest;
+      permissions of the user inside the &vmguest;.
      </para>
     </callout>
     <callout arearefs="co.fs.sourcedir">
      <para>
-      Path to share with the &vmguest;
+      Path to share with the &vmguest;.
      </para>
     </callout>
     <callout arearefs="co.fs.targetdir">
      <para>
-      Name or label of the path for the mount command
+      Name or label of the path for the mount command.
      </para>
     </callout>
    </calloutlist>
    <para>
+    To mount the <literal>shared</literal> directory on the &vmguest;, use the
+    following commands:
     Under the &vmguest; now you need to mount the <emphasis>target
     dir='shared'</emphasis>:
    </para>
-<screen># mkdir /opt/mnt_shared
-# mount shared -t 9p /opt/mnt_shared -o trans=virtio
-# mount | grep shared shared on /opt/mnt_shared type 9p (rw,relatime,sync,dirsync,trans=virtio)</screen>
+<screen>mkdir /opt/mnt_shared
+mount shared -t 9p /opt/mnt_shared -o trans=virtio</screen>
    <para>
-    Read
+    See
     <link xlink:href="https://libvirt.org/formatdomain.html#elementsFilesystems">&libvirt;
     File System </link> and
     <link xlink:href="http://wiki.qemu.org/Documentation/9psetup">&qemu;
@@ -2651,6 +2593,9 @@ Deactivated 3 logical volumes in volume group system
    </para>
   </sect2>
  </sect1>
+
+<!-- .. -->
+
  <sect1 xml:id="vt.best.vm.perf">
   <title>Configurations and Settings Performed within the &vmguest;</title>
 
