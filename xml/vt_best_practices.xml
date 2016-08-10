@@ -2594,69 +2594,73 @@ mount shared -t 9p /opt/mnt_shared -o trans=virtio</screen>
   </sect2>
  </sect1>
 
-<!-- .. -->
+ <sect1 xml:id="vt.best.vmguests">
+  <title>&vmguest; Configuration</title>
 
- <sect1 xml:id="vt.best.vm.perf">
-  <title>Configurations and Settings Performed within the &vmguest;</title>
+  <para/>
 
-  <para></para>
-
-  <sect2 xml:id="vt.best.perf.virtio">
+  <sect2 xml:id="vt.best.vmguests.virtio">
    <title>Virtio Driver</title>
    <para>
-    To increase &vmguest; performance it is recommended to use PV drivers,
-    the host implementation is in user space, so no driver is needed in the
-    host. Virtio is a virtualization standard, so the guest's device driver
-    is aware that it is running in a virtual environment. Note that virtio
-    used in &kvm; is different, but architecturally similar to the &xen;
-    paravirtualized device drivers (like
-    <link xlink:href="https://www.suse.com/products/vmdriverpack/">VMDP</link>
-    in a Windows* guest).
+    To increase &vmguest; performance it is recommended to use para-virtualized
+    drivers within the &vmguest;s. The virtualization standard for such drivers
+    for &kvm; are the <literal>virtio</literal> drivers, that are aware that
+    they are running in a virtual environment. &Xen; is using similar
+    paravirtualized device drivers (like <link
+    xlink:href="https://www.suse.com/products/vmdriverpack/">VMDP</link> in a
+    Windows* guest). To have a better understanding of this topic refer to the
+    <link
+      xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/sec_vt_io.html">I/O
+    Virtualization</link> section in the official Virtualization guide.
    </para>
-   <note>
-    <title>I/O in virtualization</title>
+
+   <sect3 xml:id="vt.best.vmguests.virtio.virtio_blk">
+    <title><literal>virtio blk</literal></title>
     <para>
-     To have a better understanding of this topic refer to the
-     <link xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/sec_vt_io.html">I/O
-     Virtualization</link> section in the official Virtualization guide.
+     <literal>virtio_blk</literal> is the virtio block device for disk. To use
+     the <literal>virtio blk</literal> driver for a block device, specify the
+     <tag class="attribute">bus='virtio'</tag> attribute in the <tag
+     class="element">disk</tag> definition:
     </para>
-   </note>
-   <sect3>
-    <title>virtio blk</title>
-    <para>
-     <emphasis>virtio_blk</emphasis> is the virtio block device for disk.
-    </para>
-    <warning>
-     <title>&qemu; option</title>
-     <para>
-      The <option>-hd[abcd]</option> for virtio disk will not work, you must
-      use <option>-drive</option> instead.
-     </para>
-    </warning>
-    <warning>
-     <title>Disk name change</title>
-     <para>
-      For a Linux guest, the disk will show up as
-      <option>/dev/vd[a-z][1-9]</option>. If you migrate from a non-virtio
-      disk you need to change <option>root=</option> in GRUB config, and
-      regenerate the <filename>initrd</filename> file, otherwise the system
-      will not be able to boot.
-     </para>
-    </warning>
-    <para>
-     Example of a virtio disk definition:
-    </para>
-<screen>&lt;disk type='....' device='disk'&gt;
+    <screen>&lt;disk type='....' device='disk'&gt;
     ....
     &lt;target dev='vda' bus='virtio'/&gt;
 &lt;/disk&gt;</screen>
-    <para>
-     This is preferable to removing every disk block in the XML
-     configuration containing <emphasis>&lt;address .*&gt;</emphasis>
-     because it will be regenerated automatically.
-    </para>
+
+    <important>
+     <title>Disk Device Names</title>
+     <para>
+      <literal>virtio</literal> disk devices are named
+      <literal>/dev/vd[a-z][1-9]</literal>. If you migrate a Linux guest from a
+      non-virtio disk you need to adjust the <literal>root=</literal> parameter
+      in the GRUB configuration, and regenerate the <filename>initrd</filename>
+      file, otherwise the system will not be able to boot. On &vmguest;s with
+      other operating systems, the boot loader needs to be adjusted or
+      reinstalled, too.
+     </para>
+    </important>
+
+    <important>
+     <title>
+      Using <literal>virtio</literal> disks with
+      <command>qemu-system-ARCH</command>
+     </title>
+     <para>
+      When running <command>qemu-system-ARCH</command>, use the
+      <option>-drive</option> option to add a disk to the &vmguest;. See the
+      <link
+      xlink:href="https://www.suse.com/documentation/sles-12/book_virt/data/cha_qemu_guest_inst_qemu-kvm.html">Basic
+      Installation with qemu-system-ARCH</link> section in the official
+      Virtualization guide for an example. The <option>-hd[abcd]</option>
+      option will not work for virtio disks.
+     </para>
+    </important>
    </sect3>
-   <sect3>
+
+
+<!-- .. -->
+
+   <sect3 xml:id="vt.best.vmguests.virtio.virtio_net">
     <title>virtio net</title>
     <para>
      <emphasis>virtio_net</emphasis> is the virtio network device. The
