@@ -74,7 +74,7 @@
     <term>Browsing Shared Files and Directories with SMB</term>
     <listitem>
      <para>
-      &nautilus; supports browsing shared resources
+      &nautilus; (previously called Nautilus) supports browsing shared resources
       through SMB.
      </para>
     </listitem>
@@ -83,7 +83,7 @@
     <term>Sharing Files and Directories with SMB</term>
     <listitem>
      <para>
-      Nautilus supports sharing directories and files as in Windows.
+      &nautilus; supports sharing directories and files as in Windows.
      </para>
     </listitem>
    </varlistentry>
@@ -91,7 +91,7 @@
     <term>Accessing and Manipulating User Data on the Windows Server</term>
     <listitem>
      <para>
-      Through Nautilus, users can access their Windows user data and
+      Through &nautilus;, users can access their Windows user data and
       can edit, create, and delete files and directories on the Windows
       server. Users can access their data without having to enter their
       password multiple times.
@@ -124,7 +124,7 @@
     <listitem>
      <para>
       <remark>sknorr, 2014-08-27: "kerberized"? can we avoid that?</remark>
-      Many applications of both desktops are Kerberos-enabled
+      Many desktop applications are Kerberos-enabled
       (<emphasis>kerberized</emphasis>), which means they can transparently
       handle authentication for the user without the need for password
       reentry at Web servers, proxies, groupware applications, or other
@@ -676,15 +676,19 @@
    <procedure>
     <step>
      <para>
-      Enter the domain name and the Windows user name in the form of
-      <replaceable>Domain_Name</replaceable>\<replaceable>Windows_User_Name</replaceable>
-      in the <guimenu>User_Name</guimenu> field and press
-      <keycap function="enter"/>.
+      Click <guimenu>Not listed</guimenu>.
      </para>
     </step>
     <step>
      <para>
-      Enter your Windows password and press <keycap function="enter"/>.
+      In the text box <guimenu>Username</guimenu>,
+      enter the domain name and the Windows user name in this form:
+      <literal><replaceable>DOMAIN_NAME</replaceable>\<replaceable>USER_NAME</replaceable></literal>.
+     </para>
+    </step>
+    <step>
+     <para>
+      Enter your Windows password.
      </para>
     </step>
    </procedure>
@@ -704,7 +708,7 @@
    </para>
    <para>
     To log in to your AD client from a console, enter
-    <literal><replaceable>DOMAIN</replaceable>\<replaceable>user</replaceable></literal>
+    <literal><replaceable>DOMAIN_NAME</replaceable>\<replaceable>USER_NAME</replaceable></literal>
     at the <literal>login:</literal> prompt and provide the password.
    </para>
    <para>
@@ -716,7 +720,7 @@
      <para>
       At the login prompt, enter:
      </para>
-<screen>ssh <replaceable>DOMAIN</replaceable>\\<replaceable>user</replaceable>@<replaceable>host_name</replaceable></screen>
+<screen>ssh <literal><replaceable>DOMAIN_NAME</replaceable>\\<replaceable>USER_NAME</replaceable></literal>@<replaceable>HOST_NAME</replaceable></screen>
      <para>
       The <literal>\</literal> domain and login delimiter is escaped with
       another <literal>\</literal> sign.
