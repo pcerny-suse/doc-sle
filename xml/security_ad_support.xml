@@ -54,9 +54,10 @@
     </info>
     <para>
   Active Directory* (AD) is a directory-service based on LDAP, Kerberos, and
-  other services that is used by Microsoft Windows to manage resources,
-  services, and people. In an MS Windows network, AD provides information
-  about these objects, restricts access to them, and enforces policies.
+  other services. It is used by Microsoft&thrdmrk; Windows&thrdmrk; to manage
+  resources, services, and people. In a Microsoft Windows network, AD provides
+  information about these objects, restricts access to them, and enforces
+  policies.
   &productnamereg; lets you join existing AD domains and integrate your
   Linux machine into a Windows environment.
  </para>

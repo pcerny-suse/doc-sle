@@ -120,7 +120,8 @@
      </para>
      <para>
       It is strongly recommended to <guimenu>Enable TLS</guimenu>. For more
-      information, see <xref linkend="step.auth.server.config.tls"/>.
+      information, see <xref linkend="proc.auth.server.config"/>,
+      <xref linkend="step.auth.server.config.tls"/>.
      </para>
      <warning>
       <title>Password Encryption</title>
@@ -701,7 +702,7 @@
   <tertiary>templates</tertiary></indexterm>
 
   <para>
-   &yast; includes the <guimenu>Authentication Client</guimenu> module that
+   &yast; includes the <guimenu>LDAP and Kerberos Client</guimenu> module that
    helps with defining authentication scenarios. Start the module by
    selecting <menuchoice> <guimenu>Network Services</guimenu>
    <guimenu>Authentication Client</guimenu> </menuchoice>. The &yast;
